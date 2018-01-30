@@ -69,7 +69,7 @@ $ pip3 install python-gflags
 
 You have to download StarCraft II and install it. StarCraft II is now free.
 
-http://us.battle.net/sc2/en/legacy-of-the-void/
+https://starcraft2.com/en-gb/
 
 ### Linux Packages
 

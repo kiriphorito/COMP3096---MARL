@@ -14,7 +14,7 @@ Running this in Linux will show just the pysc2 environment. If you run on either
 - pysc2 (Deepmind) [https://github.com/deepmind/pysc2]
 - baselines (OpenAI) [https://github.com/openai/baselines]
 - s2client-proto (Blizzard) [https://github.com/Blizzard/s2client-proto]
-- Tensorflow 1.3 (Google) [https://github.com/tensorflow/tensorflow]
+- Tensorflow 1.5 (Google) [https://github.com/tensorflow/tensorflow]
 
 ## Usage
 
@@ -35,6 +35,7 @@ $ sudo apt-get cmake
 ```
 
 You will also need tensorflow. Tensorflow GPU only works with nVidia graphics due to implementation around CUDA cores.
+CURRENTLY TRYING TO FIUGRE OUT HOW TO GET TENSORFLOW-GPU TO WORK.
 ```shell
 $ pip3 install tensorflow
 $ pip3 install tensorflow-gpu

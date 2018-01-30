@@ -1,11 +1,13 @@
-# A-Guide-to-DeepMind-s-StarCraft-AI-Environment-
-This is the code for "A Guide to DeepMind's StarCraft AI Environment" by Siraj Raval on Youtube
+# COMP3096 - Research Methods
+Thanks to [chris-chris](https://github.com/chris-chris/pysc2-examples) and [Siraj Raval](https://github.com/Zacharias030/A-Guide-to-DeepMinds-StarCraft-AI-Environment)
 
 ## Overview
 
-This is the code for [this](https://youtu.be/URWXG5jRB-A) video on on Youtube by Siraj Raval. This code will help you train or run a pretrained AI model in the DeepMind Starcraft II environment. 
+This is the code for [this](https://youtu.be/URWXG5jRB-A) video on on Youtube by Siraj Raval. This code will help you train or run a pretrained AI model in the DeepMind Starcraft II environment.
 
-## Dependencies 
+The following doesn't work with Python 2. You will require Python 3. So run all commands with pip3 and python3. If there are any problems in the installation then consider using sudo.
+
+## Dependencies
 
 - pysc2 (Deepmind) [https://github.com/deepmind/pysc2]
 - baselines (OpenAI) [https://github.com/openai/baselines]
@@ -15,20 +17,28 @@ This is the code for [this](https://youtu.be/URWXG5jRB-A) video on on Youtube by
 ## Usage
 
 
-## 1. Get PySC2
+## 1. Get Dependencies
 
 ### PyPI
 
 The easiest way to get PySC2 is to use pip:
 
 ```shell
-$ pip install pysc2
+$ pip3 install pysc2
 ```
 
 Also, you have to install `baselines` library.
 
 ```shell
-$ pip install baselines
+$ pip3 install baselines
+```
+
+```shell
+$ pip3 install python-absl
+```
+
+```shell
+$ pip3 install python-gflags
 ```
 
 ## 2. Install StarCraft II
@@ -56,15 +66,13 @@ and extract them to your `StarcraftII/Maps/` directory.
 ## 4. Train it!
 
 ```shell
-$ python train_mineral_shards.py
+$ python3 train_mineral_shards.py
 ```
+
+Once you hit a value that you are satisfied with then quit
 
 ## 5. Enjoy it!
 
 ```shell
-$ python enjoy_mineral_shards.py
+$ python3 enjoy_mineral_shards.py
 ```
-
-## Credits
-
-The credits for this code go to [chris-chris](https://github.com/chris-chris/pysc2-examples). I've merely created a wrapper to get people started. 

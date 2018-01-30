@@ -7,6 +7,8 @@ This is the code for [this](https://youtu.be/URWXG5jRB-A) video on on Youtube by
 
 The following doesn't work with Python 2. You will require Python 3. So run all commands with pip3 and python3. If there are any problems in the installation then consider using sudo.
 
+Running this in Linux will show just the pysc2 environment. If you run on either Mac or Windows, the game will also b run and you can see the game and the pysc2 environment.
+
 ## Dependencies
 
 - pysc2 (Deepmind) [https://github.com/deepmind/pysc2]
@@ -27,16 +29,28 @@ The easiest way to get PySC2 is to use pip:
 $ pip3 install pysc2
 ```
 
-Also, you have to install `baselines` library.
+Before you install `baselines` you will require cmake.
+```shell
+$ sudo apt-get cmake
+```
+
+You will also need tensorflow. Tensorflow GPU only works with nVidia graphics due to implementation around CUDA cores.
+```shell
+$ pip3 install tensorflow
+$ pip3 install tensorflow-gpu
+```
+
+Also, you have to install `baselines` library. This is where the basic ML algorithms are. It is not required to do MARL but is a good starting point.
 
 ```shell
 $ pip3 install baselines
 ```
 
 ```shell
-$ pip3 install python-absl
+$ pip3 install absl-py
 ```
 
+I don't think the following is necessary but may help with errors.
 ```shell
 $ pip3 install python-gflags
 ```

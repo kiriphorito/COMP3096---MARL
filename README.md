@@ -59,7 +59,7 @@ $ pip3 install python-gflags
 
 ### Mac / Win
 
-You have to purchase StarCraft II and install it. Or even the Starter Edition will work.
+You have to download StarCraft II and install it. StarCraft II is now free.
 
 http://us.battle.net/sc2/en/legacy-of-the-void/
 
@@ -69,7 +69,7 @@ Follow Blizzard's [documentation](https://github.com/Blizzard/s2client-proto#dow
 get the linux version. By default, PySC2 expects the game to live in
 `~/StarCraftII/`.
 
-* [3.16.1](http://blzdistsc2-a.akamaihd.net/Linux/SC2.3.16.1.zip)
+* [4.0.2](http://blzdistsc2-a.akamaihd.net/Linux/SC2.4.0.2.zip)
 
 ## 3. Download Maps
 
@@ -83,7 +83,7 @@ and extract them to your `StarcraftII/Maps/` directory.
 $ python3 train_mineral_shards.py
 ```
 
-Once you hit a value that you are satisfied with then quit
+Once you hit a value that you are satisfied with then quit. I have found the the current one only goes up to about 14-15.
 
 ## 5. Enjoy it!
 

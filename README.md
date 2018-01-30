@@ -41,6 +41,13 @@ $ pip3 install tensorflow
 $ pip3 install tensorflow-gpu
 ```
 
+Once you install tensorflow-gpu, it will run the GPU. To revert, you could:
+1. Reinstall tensorflow
+```shell
+$ pip3 uninstall tensorflow
+$ pip3 install tensorflow --ignore-install
+```
+
 Also, you have to install `baselines` library. This is where the basic ML algorithms are. It is not required to do MARL but is a good starting point.
 
 ```shell

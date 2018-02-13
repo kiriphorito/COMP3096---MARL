@@ -61,6 +61,38 @@ Reboot the computer and then check the driver with:
 $ lsmod | grep nvidia
 ```
 
+Next install the CUDA Toolkit 9.0 from [here](https://developer.nvidia.com/cuda-90-download-archive) using runfile (local).
+Then cd into the download directory and run this (Example is for x86-64 Ubuntu):
+```shell
+$ sudo sh cuda_9.0.176_384.81_linux.run
+```
+Don't install the Nvidia Driver and keep everything else as default.
+
+Then add following line to bashrc:
+```shell
+$ nano ~/.bashrc
+
+export LD_LIBRARY_PATH=LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
+```
+
+Now to install cuDNN. Download the install [here] (https://developer.nvidia.com/rdp/cudnn-download). You want the cuDNN v7.0.5 for CUDA 9.0.
+Then do the following:
+```shell
+$ sudo rm -rf /usr/local/cuda/include/cudnn.h
+$ sudo rm -rf /usr/local/cuda/lib64/libcudnn*
+$ sudo tar xvzf cudnn-9.0-linux-x64-v7.tgz
+$ cd cuda
+$ sudo cp include/cudnn.h /usr/local/cuda/include/
+$ sudo cp lib64/lib* /usr/local/cuda/lib64/
+$ cd /usr/local/cuda/lib64/
+$ sudo chmod +r libcudnn.so.7
+$ sudo ln -sf libcudnn.so.6.0.21 libcudnn.so.7
+$ sudo ln -sf libcudnn.so.6 libcudnn.so
+$ sudo ldconfig
+```
+
+Tensorflow-GPU should now work.
+
 Once you install tensorflow-gpu, it will run the GPU. To revert, you could:
 1. Reinstall tensorflow
 ```shell

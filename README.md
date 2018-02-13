@@ -7,7 +7,7 @@ This is the code for [this](https://youtu.be/URWXG5jRB-A) video on on Youtube by
 
 The following doesn't work with Python 2. You will require Python 3. So run all commands with pip3 and python3. If there are any problems in the installation then consider using sudo.
 
-Running this in Linux will show just the pysc2 environment. If you run on either Mac or Windows, the game will also b run and you can see the game and the pysc2 environment.
+Running this in Linux will show just the pysc2 environment. If you run on either Mac or Windows, the game will also be run and you can see the game and the pysc2 environment.
 
 ## Dependencies
 
@@ -15,6 +15,8 @@ Running this in Linux will show just the pysc2 environment. If you run on either
 - baselines (OpenAI) [https://github.com/openai/baselines]
 - s2client-proto (Blizzard) [https://github.com/Blizzard/s2client-proto]
 - Tensorflow 1.5 (Google) [https://github.com/tensorflow/tensorflow]
+
+This whole tensorflow, tensorflow-gpu and baselines are a dependencies nightmare.
 
 ## Usage
 
@@ -39,6 +41,24 @@ CURRENTLY TRYING TO FIUGRE OUT HOW TO GET TENSORFLOW-GPU TO WORK.
 ```shell
 $ pip3 install tensorflow
 $ pip3 install tensorflow-gpu
+```
+
+How to get tensorflow-gpu to work.
+Install Nvidia driver above 380. If you have an existing driver then:
+```shell
+$ sudo apt-get purge nvidia*
+```
+
+To install: (It works for 387.)
+```shell
+$ sudo add-apt-repository ppa:graphics-drivers
+$ sudo apt-get update
+$ sudo apt-get install nvidia-387
+```
+
+Reboot the computer and then check the driver with:
+```shell
+$ lsmod | grep nvidia
 ```
 
 Once you install tensorflow-gpu, it will run the GPU. To revert, you could:

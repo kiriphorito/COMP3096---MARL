@@ -37,7 +37,6 @@ $ sudo apt install cmake
 ```
 
 You will also need tensorflow. Tensorflow GPU only works with nVidia graphics due to implementation around CUDA cores.
-CURRENTLY TRYING TO FIUGRE OUT HOW TO GET TENSORFLOW-GPU TO WORK.
 ```shell
 $ pip3 install tensorflow
 $ pip3 install tensorflow-gpu
@@ -134,7 +133,7 @@ get the linux version. By default, PySC2 expects the game to live in
 
 ## 3. Download Maps
 
-Download the [ladder maps](https://github.com/Blizzard/s2client-proto#downloads)
+Download the [maps and melee packs](https://github.com/Blizzard/s2client-proto#downloads)
 and the [mini games](https://github.com/deepmind/pysc2/releases/download/v1.0/mini_games.zip)
 and extract them to your `StarcraftII/Maps/` directory.
 

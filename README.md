@@ -91,7 +91,10 @@ $ sudo ln -sf libcudnn.so.7 libcudnn.so
 $ sudo ldconfig
 ```
 
-Tensorflow-GPU should now work.
+Tensorflow-GPU should now work. You can see GPU usage using:
+```shell
+watch -d -n 0.5 nvidia-smi
+```
 
 Once you install tensorflow-gpu, it will run the GPU. To revert, you could:
 1. Reinstall tensorflow

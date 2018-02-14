@@ -33,7 +33,7 @@ $ pip3 install pysc2
 
 Before you install `baselines` you will require cmake.
 ```shell
-$ sudo apt-get cmake
+$ sudo apt install cmake
 ```
 
 You will also need tensorflow. Tensorflow GPU only works with nVidia graphics due to implementation around CUDA cores.
@@ -49,11 +49,11 @@ Install Nvidia driver above 380. If you have an existing driver then:
 $ sudo apt-get purge nvidia*
 ```
 
-To install: (It works for 387.)
+To install: (It works for 390)
 ```shell
 $ sudo add-apt-repository ppa:graphics-drivers
 $ sudo apt-get update
-$ sudo apt-get install nvidia-387
+$ sudo apt-get install nvidia-390
 ```
 
 Reboot the computer and then check the driver with:
@@ -61,7 +61,7 @@ Reboot the computer and then check the driver with:
 $ lsmod | grep nvidia
 ```
 
-Next install the CUDA Toolkit 9.0 from [here](https://developer.nvidia.com/cuda-90-download-archive) using runfile (local).
+Next install the CUDA Toolkit 9.0 from [here](https://developer.nvidia.com/cuda-90-download-archive) using runfile (local). 9.1 isn't yet supported by TensorFlow 1.5
 Then cd into the download directory and run this (Example is for x86-64 Ubuntu):
 ```shell
 $ sudo sh cuda_9.0.176_384.81_linux.run
@@ -86,8 +86,8 @@ $ sudo cp include/cudnn.h /usr/local/cuda/include/
 $ sudo cp lib64/lib* /usr/local/cuda/lib64/
 $ cd /usr/local/cuda/lib64/
 $ sudo chmod +r libcudnn.so.7
-$ sudo ln -sf libcudnn.so.6.0.21 libcudnn.so.7
-$ sudo ln -sf libcudnn.so.6 libcudnn.so
+$ sudo ln -sf libcudnn.so.7 libcudnn.so.7
+$ sudo ln -sf libcudnn.so.7 libcudnn.so
 $ sudo ldconfig
 ```
 

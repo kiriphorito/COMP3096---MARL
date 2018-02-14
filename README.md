@@ -28,7 +28,7 @@ This whole tensorflow, tensorflow-gpu and baselines are a dependencies nightmare
 The easiest way to get PySC2 is to use pip:
 
 ```shell
-$ pip3 install pysc2
+$ sudo pip3 install pysc2
 ```
 
 Before you install `baselines` you will require cmake.
@@ -86,8 +86,6 @@ $ sudo cp include/cudnn.h /usr/local/cuda/include/
 $ sudo cp lib64/lib* /usr/local/cuda/lib64/
 $ cd /usr/local/cuda/lib64/
 $ sudo chmod +r libcudnn.so.7
-$ sudo ln -sf libcudnn.so.7 libcudnn.so.7
-$ sudo ln -sf libcudnn.so.7 libcudnn.so
 $ sudo ldconfig
 ```
 

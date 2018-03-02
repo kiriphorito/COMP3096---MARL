@@ -150,3 +150,13 @@ Once you hit a value that you are satisfied with then quit. I have found the the
 ```shell
 $ python3 enjoy_mineral_shards.py
 ```
+
+## 6. Using Sam's Script
+Look at the command file in the experiments folder. Install the missing modules. It should just be sklearn. Remember to use pip3. You might have to use sudo pip3 install.
+
+## 7. Using Raymond's Script
+You have to pull Deepmind's pysc2 git folder. Then while inside the directory run the following:
+```shell
+$ sudo pip3 install -e .
+```
+After which you can then run the command in command file and it should work. If you don't run the command then when you attempt to run the command you will get an error saying PLAYER_RELATIVE cannot be resolved.

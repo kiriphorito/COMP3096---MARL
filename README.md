@@ -100,7 +100,7 @@ $ pip3 uninstall tensorflow
 $ pip3 install tensorflow --ignore-install
 ```
 
-Also, you have to install `baselines` library. This is where the basic ML algorithms are. It is not required to do MARL but is a good starting point.
+Also, you have to install `baselines` library. This is where the basic ML algorithms are. It is not required to do MARL but is a good starting point. The most recent version of `baselines` only runs on python3. So be warned. Although code for Raymond's and Sam's scripts should both run on python3. Refer to the last steps if you cannot run them.
 
 ```shell
 $ pip3 install baselines

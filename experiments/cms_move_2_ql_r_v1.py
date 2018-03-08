@@ -6,6 +6,7 @@ import numpy as np
 import time
 import pandas as pd
 import random
+import os.path
 
 from pysc2.agents import base_agent
 from pysc2.lib import actions
@@ -28,6 +29,8 @@ actions_set = [
     ACTION_MOVE_LEFT,
     ACTION_MOVE_RIGHT,
 ]
+
+DATA_FILE = 'cms_mov_2_ql_r_v1_qtablevalues'
 
 # From https://github.com/MorvanZhou/Reinforcement-learning-with-tensorflow
 class QLearningTable:
@@ -80,9 +83,15 @@ class CustomAgent(base_agent.BaseAgent):
 
     self.previous_reward = 0
     self.previous_action = None
+    self.previous_marine_tag = None
     self.previous_state = None
 
     self.position_change = 5
+
+    self.verbose = False
+
+    if os.path.isfile(DATA_FILE + '.gz'):
+        self.qlearn.q_table = pd.read_pickle(DATA_FILE + '.gz', compression='gzip')
 
 
   def setup(self, obs_spec, action_spec):
@@ -106,7 +115,7 @@ class CustomAgent(base_agent.BaseAgent):
     print("--------------- NEW STEP ---------------")
     super(CustomAgent, self).step(obs)
 
-    time.sleep(1)
+    # time.sleep(1)
 
     # Get list of marines
     marines = [unit for unit in obs.observation.feature_units
@@ -114,6 +123,8 @@ class CustomAgent(base_agent.BaseAgent):
     if not marines:
       return FUNCTIONS.no_op()
 
+
+    self.previous_marine_tag = self._current_marine_tag
     # Select other marine unit
     marine_unit = next(marine for marine in marines if marine.tag != self._current_marine_tag)
     self._current_marine_tag = marine_unit.tag
@@ -130,18 +141,24 @@ class CustomAgent(base_agent.BaseAgent):
     current_state = [
         marines,
         minerals,
+        self.previous_marine_tag,
     ]
 
     # Give the reward of the environment
     if self.previous_action is not None:
         reward = obs.reward
+        print(reward)
 
-    print(reward)
+        self.qlearn.learn(str(self.previous_state), self.previous_action, reward, str(current_state))
+
+        self.qlearn.q_table.to_pickle(DATA_FILE + '.gz', 'gzip')
+
 
     # Select an actions
-    # rl_action = self.qlearn.choose_action(str(current_state))
-    rl_action = random.randrange(0, len(actions_set));
+    rl_action = self.qlearn.choose_action(str(current_state))
+    # rl_action = random.randrange(0, len(actions_set));
     selected_action = actions_set[rl_action]
+    self.previous_action = rl_action
     print(selected_action)
     print("Current Marine Tag:", marine_unit.tag)
     print("Current Location:", marine_xy)

@@ -2,8 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy
+import numpy as np
 import time
+import pandas as pd
+import random
 
 from pysc2.agents import base_agent
 from pysc2.lib import actions
@@ -72,9 +74,16 @@ class CustomAgent(base_agent.BaseAgent):
   """Independent two-agent control for the CollectMineralShards minigame."""
 
   def __init__(self):
-    super(SmartAgent, self).__init__()
+    super(CustomAgent, self).__init__()
 
     self.qlearn = QLearningTable(actions=list(range(len(actions_set))))
+
+    self.previous_reward = 0
+    self.previous_action = None
+    self.previous_state = None
+
+    self.position_change = 5
+
 
   def setup(self, obs_spec, action_spec):
     super(CustomAgent, self).setup(obs_spec, action_spec)
@@ -86,7 +95,15 @@ class CustomAgent(base_agent.BaseAgent):
     self._current_marine_tag = 0
     self._previous_mineral_xy = [-1, -1]
 
+
+  def bound_check(self, lb, hb, input_check):
+    if (input_check < lb):
+      return lb
+    elif (input_check > hb):
+      return hb
+
   def step(self, obs):
+    print("--------------- NEW STEP ---------------")
     super(CustomAgent, self).step(obs)
 
     time.sleep(1)
@@ -106,17 +123,70 @@ class CustomAgent(base_agent.BaseAgent):
     minerals = [[unit.x, unit.y] for unit in obs.observation.feature_units
                 if unit.alliance == _PLAYER_NEUTRAL]
 
-    if self._previous_mineral_xy in minerals:
-      # Remove the previous target of the other marine from consideration
-      minerals.remove(self._previous_mineral_xy)
+    # if self._previous_mineral_xy in minerals:
+    #   # Remove the previous target of the other marine from consideration
+    #   minerals.remove(self._previous_mineral_xy)
 
-    if minerals:
-      # Find the closest mineral.
-      distances = numpy.linalg.norm(
-        numpy.array(minerals) - numpy.array(marine_xy), axis=1)
-      closest_mineral_xy = minerals[numpy.argmin(distances)]
-      self._previous_mineral_xy = closest_mineral_xy  # Record which mineral we selected
-      return FUNCTIONS.move_unit(marine_unit.tag.item(), "now", closest_mineral_xy) # .item() to convert numpy.int64 to native python type (int)
+    current_state = [
+        marines,
+        minerals,
+    ]
+
+    # Give the reward of the environment
+    if self.previous_action is not None:
+        reward = obs.reward
+
+    print(reward)
+
+    # Select an actions
+    # rl_action = self.qlearn.choose_action(str(current_state))
+    rl_action = random.randrange(0, len(actions_set));
+    selected_action = actions_set[rl_action]
+    print(selected_action)
+    print("Current Marine Tag:", marine_unit.tag)
+    print("Current Location:", marine_xy)
+
+    target = [0,0]
+
+    if (selected_action == ACTION_DO_NOTHING):
+        return FUNCTIONS.no_op()
+    elif (selected_action == ACTION_MOVE_UP):
+        target = [marine_xy[0] , marine_xy[1] - self.position_change];
+    elif (selected_action == ACTION_MOVE_DOWN):
+        target = [marine_xy[0] , marine_xy[1] + self.position_change];
+    elif (selected_action == ACTION_MOVE_LEFT):
+        target = [marine_xy[0] - self.position_change , marine_xy[1]];
+    elif (selected_action == ACTION_MOVE_RIGHT):
+        target = [marine_xy[0] + self.position_change , marine_xy[1]];
+
+    target_x = target[0]
+    target_y = target[1]
+
+    print(target_x)
+    print(target_y)
+
+    if (target[0] < 0):
+        target_x = 0
+    elif (target[0] > 64):
+        target_x = 64
+    if (target[1] < 0):
+        target_y = 0
+    elif (target[1] > 64):
+        target_y = 64
+
+    target = [target_x, target_y]
+
+    print("Target:", target)
+
+    return FUNCTIONS.move_unit(marine_unit.tag.item(), "now", target)
+
+    # if minerals:
+    #   # Find the closest mineral.
+    #   distances = np.linalg.norm(
+    #     np.array(minerals) - np.array(marine_xy), axis=1)
+    #   closest_mineral_xy = minerals[np.argmin(distances)]
+    #   self._previous_mineral_xy = closest_mineral_xy  # Record which mineral we selected
+    #   return FUNCTIONS.move_unit(marine_unit.tag.item(), "now", closest_mineral_xy) # .item() to convert numpy.int64 to native python type (int)
 
     return FUNCTIONS.no_op()
 

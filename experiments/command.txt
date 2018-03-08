@@ -3,10 +3,10 @@ Sam’s Script
 python3 -m pysc2.bin.agent --map CollectMineralShards --agent <FILE>.<CLASS> --agent_race T
 
 Example
-python3 -m pysc2.bin.agent --map CollectMineralShards --agent cms-move-1-rand-s-v1.SimpleAgent —agent_race T
+python3 -m pysc2.bin.agent --map CollectMineralShards --agent cms_move_1_rand_s_v1.SimpleAgent —agent_race T
 
 Raymond’s Script
 python3 -m pysc2.bin.agent --map CollectMineralShards --agent <FILE>.<CLASS> --use_feature_units
 
 Example
-python3 -m pysc2.bin.agent --map CollectMineralShards --agent cms-move-2-bot-r-v1.CustomAgent --use_feature_units
+python3 -m pysc2.bin.agent --map CollectMineralShards --agent cms_move_2_bot_r_v1.CustomAgent --use_feature_units

@@ -6,6 +6,7 @@ import tensorflow as tf
 import zipfile
 
 import baselines.common.tf_util as U
+import baselines.deepq.utils as DU
 
 from baselines import logger
 from baselines.common.schedules import LinearSchedule
@@ -208,7 +209,7 @@ def learn(env,
   sess.__enter__()
 
   def make_obs_ph(name):
-    return U.BatchInput((64, 64), name=name)
+    return DU.BatchInput((64, 64), name=name)
 
   act, train, update_target, debug = deepq.build_train(
     make_obs_ph=make_obs_ph,
@@ -296,7 +297,7 @@ def learn(env,
       new_action = None
 
       obs, new_action = common.marine_action(env, obs, player, action)
-      army_count = env._obs.observation.player_common.army_count
+      army_count = env._obs[0].observation.player_common.army_count
 
       try:
         if army_count > 0 and _ATTACK_SCREEN in obs[0].observation["available_actions"]:

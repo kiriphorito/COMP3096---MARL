@@ -6,6 +6,7 @@ import tensorflow as tf
 import zipfile
 
 import baselines.common.tf_util as U
+import baselines.deepq.utils as DU
 
 from baselines import logger
 from baselines.common.schedules import LinearSchedule
@@ -190,7 +191,7 @@ def learn(env,
   sess.__enter__()
 
   def make_obs_ph(name):
-    return U.BatchInput((64, 64), name=name)
+    return DU.BatchInput((64, 64), name=name)
 
   act, train, update_target, debug = deepq.build_train(
     make_obs_ph=make_obs_ph,

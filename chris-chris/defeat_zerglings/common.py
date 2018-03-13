@@ -4,6 +4,9 @@ from pysc2.lib import actions as sc2_actions
 from pysc2.lib import features
 from pysc2.lib import actions
 
+from pprint import pprint
+
+
 _PLAYER_RELATIVE = features.SCREEN_FEATURES.player_relative.index
 
 _UNIT_TYPE = features.SCREEN_FEATURES.unit_type.index
@@ -28,9 +31,10 @@ _NOT_QUEUED = [0]
 _SELECT_ALL = [0]
 
 def init(env, player_relative, obs):
+  # pprint(vars(obs))
 
   #print("init")
-  army_count = env._obs.observation.player_common.army_count
+  army_count = env._obs[0].observation.player_common.army_count
 
   if(army_count==0):
     return obs
@@ -113,7 +117,7 @@ def check_group_list(env, obs):
         #print("group error group_id : %s count : %s" % (id, group[1]))
         error = True
         return error
-  if(army_count != env._obs.observation.player_common.army_count):
+  if(army_count != env._obs[0].observation.player_common.army_count):
     error = True
     # print("army_count %s !=  %s env._obs.observation.player_common.army_count "
     #      % (army_count, env._obs.observation.player_common.army_count))

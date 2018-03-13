@@ -1,3 +1,7 @@
+# Project Specific
+chris-chris/models
+chris-chris/tensorboard
+
 # Byte-compiled / optimized / DLL files
 **/__pycache__/
 *.py[cod]

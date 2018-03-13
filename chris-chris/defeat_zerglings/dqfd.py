@@ -67,7 +67,7 @@ class ActWrapper(object):
         f.write(model_data)
 
       zipfile.ZipFile(arc_path, 'r', zipfile.ZIP_DEFLATED).extractall(td)
-      U.load_state(os.path.join(td, "model"))
+      DU.load_state(os.path.join(td, "model"))
 
     return ActWrapper(act)
 
@@ -77,7 +77,7 @@ class ActWrapper(object):
   def save(self, path):
     """Save model to a pickle located at `path`"""
     with tempfile.TemporaryDirectory() as td:
-      U.save_state(os.path.join(td, "model"))
+      DU.save_state(os.path.join(td, "model"))
       arc_name = os.path.join(td, "packed.zip")
       with zipfile.ZipFile(arc_name, 'w') as zipf:
         for root, dirs, files in os.walk(td):
@@ -387,12 +387,12 @@ def learn(env,
           if print_freq is not None:
             logger.log("Saving model due to mean reward increase: {} -> {}".format(
               saved_mean_reward, mean_100ep_reward))
-          U.save_state(model_file)
+          DU.save_state(model_file)
           model_saved = True
           saved_mean_reward = mean_100ep_reward
     if model_saved:
       if print_freq is not None:
         logger.log("Restored model with mean reward: {}".format(saved_mean_reward))
-      U.load_state(model_file)
+      DU.load_state(model_file)
 
   return ActWrapper(act)

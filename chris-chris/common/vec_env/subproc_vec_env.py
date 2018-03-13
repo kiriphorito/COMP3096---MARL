@@ -95,7 +95,7 @@ def worker(remote, map_name, nscripts, i):
               xy_per_marine["1"] = [int(player_x.mean()), int(player_y.mean())]
             else:
               xy_per_marine["0"] = [int(player_x.mean()), int(player_y.mean())]
-          
+
         remote.send((ob, reward, done, info, army_count,
                      control_groups, selected, xy_per_marine))
 
@@ -167,6 +167,17 @@ envs: list of gym environments to run in subprocesses
     return np.stack(obs), np.stack(rews), np.stack(
       dones), infos, army_counts, control_groups, np.stack(
       selected), xy_per_marine
+
+  def step_async(self, actions):
+    for remote, action in zip(self.remotes, actions):
+      remote.send(('step', action))
+    self.waiting = True
+
+  def step_wait(self):
+    results = [remote.recv() for remote in self.remotes]
+    self.waiting = False
+    obs, rews, dones, infos = zip(*results)
+    return np.stack(obs), np.stack(rews), np.stack(dones), infos  
 
   def reset(self):
     for remote in self.remotes:

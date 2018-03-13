@@ -54,7 +54,9 @@ def main():
     logdir = "tensorboard/zergling/%s/%s_num%s_lr%s/%s" % (
       FLAGS.algorithm,
       FLAGS.timesteps,
-      FLAGS.num_cpu,
+      # TODO: Solve AttributeError
+      # FLAGS.num_cpu,
+      "16",  # Placeholder value for num_cpu (default value)
       FLAGS.lr,
       start_time
     )

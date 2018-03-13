@@ -4,8 +4,6 @@ from pysc2.lib import actions as sc2_actions
 from pysc2.lib import features
 from pysc2.lib import actions
 
-from pprint import pprint
-
 
 _PLAYER_RELATIVE = features.SCREEN_FEATURES.player_relative.index
 
@@ -31,7 +29,6 @@ _NOT_QUEUED = [0]
 _SELECT_ALL = [0]
 
 def init(env, player_relative, obs):
-  # pprint(vars(obs))
 
   #print("init")
   army_count = env._obs[0].observation.player_common.army_count

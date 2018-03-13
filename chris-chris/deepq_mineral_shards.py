@@ -5,6 +5,8 @@ import tempfile
 import tensorflow as tf
 import zipfile
 
+from absl import flags
+
 import baselines.common.tf_util as U
 import baselines.deepq.utils as DU
 
@@ -17,8 +19,6 @@ from pysc2.lib import actions as sc2_actions
 from pysc2.env import environment
 from pysc2.lib import features
 from pysc2.lib import actions
-
-from absl import flags
 
 _PLAYER_RELATIVE = features.SCREEN_FEATURES.player_relative.index
 _PLAYER_FRIENDLY = 1
@@ -51,7 +51,7 @@ class ActWrapper(object):
         f.write(model_data)
 
       zipfile.ZipFile(arc_path, 'r', zipfile.ZIP_DEFLATED).extractall(td)
-      U.load_state(os.path.join(td, "model"))
+      DU.load_state(os.path.join(td, "model"))
 
     return ActWrapper(act)
 
@@ -61,7 +61,7 @@ class ActWrapper(object):
   def save(self, path):
     """Save model to a pickle located at `path`"""
     with tempfile.TemporaryDirectory() as td:
-      U.save_state(os.path.join(td, "model"))
+      DU.save_state(os.path.join(td, "model"))
       arc_name = os.path.join(td, "packed.zip")
       with zipfile.ZipFile(arc_name, 'w') as zipf:
         for root, dirs, files in os.walk(td):
@@ -191,16 +191,28 @@ def learn(env,
   sess.__enter__()
 
   def make_obs_ph(name):
-    return DU.BatchInput((64, 64), name=name)
+    return DU.BatchInput((16, 16), name=name)
 
-  act, train, update_target, debug = deepq.build_train(
+  act_x, train_x, update_target_x, debug_x = deepq.build_train(
     make_obs_ph=make_obs_ph,
     q_func=q_func,
     num_actions=num_actions,
     optimizer=tf.train.AdamOptimizer(learning_rate=lr),
     gamma=gamma,
-    grad_norm_clipping=10
+    grad_norm_clipping=10,
+    scope="deepq_x"
   )
+
+  act_y, train_y, update_target_y, debug_y = deepq.build_train(
+    make_obs_ph=make_obs_ph,
+    q_func=q_func,
+    num_actions=num_actions,
+    optimizer=tf.train.AdamOptimizer(learning_rate=lr),
+    gamma=gamma,
+    grad_norm_clipping=10,
+    scope="deepq_y"
+  )
+
   act_params = {
     'make_obs_ph': make_obs_ph,
     'q_func': q_func,
@@ -209,15 +221,24 @@ def learn(env,
 
   # Create the replay buffer
   if prioritized_replay:
-    replay_buffer = PrioritizedReplayBuffer(buffer_size, alpha=prioritized_replay_alpha)
+    replay_buffer_x = PrioritizedReplayBuffer(buffer_size, alpha=prioritized_replay_alpha)
+    replay_buffer_y = PrioritizedReplayBuffer(buffer_size, alpha=prioritized_replay_alpha)
+
     if prioritized_replay_beta_iters is None:
       prioritized_replay_beta_iters = max_timesteps
-    beta_schedule = LinearSchedule(prioritized_replay_beta_iters,
+    beta_schedule_x = LinearSchedule(prioritized_replay_beta_iters,
                                    initial_p=prioritized_replay_beta0,
                                    final_p=1.0)
+
+    beta_schedule_y = LinearSchedule(prioritized_replay_beta_iters,
+                                     initial_p=prioritized_replay_beta0,
+                                     final_p=1.0)
   else:
-    replay_buffer = ReplayBuffer(buffer_size)
-    beta_schedule = None
+    replay_buffer_x = ReplayBuffer(buffer_size)
+    replay_buffer_y = ReplayBuffer(buffer_size)
+
+    beta_schedule_x = None
+    beta_schedule_y = None
   # Create the schedule for exploration starting from 1.
   exploration = LinearSchedule(schedule_timesteps=int(exploration_fraction * max_timesteps),
                                initial_p=1.0,
@@ -225,13 +246,11 @@ def learn(env,
 
   # Initialize the parameters and copy them to the target network.
   U.initialize()
-  update_target()
+  update_target_x()
+  update_target_y()
 
   episode_rewards = [0.0]
-  #episode_minerals = [0.0]
   saved_mean_reward = None
-
-  path_memory = np.zeros((64,64))
 
   obs = env.reset()
   # Select all marines first
@@ -239,25 +258,16 @@ def learn(env,
 
   player_relative = obs[0].observation["screen"][_PLAYER_RELATIVE]
 
-  screen = player_relative + path_memory
+  screen = (player_relative == _PLAYER_NEUTRAL).astype(int) #+ path_memory
 
   player_y, player_x = (player_relative == _PLAYER_FRIENDLY).nonzero()
   player = [int(player_x.mean()), int(player_y.mean())]
 
-  if(player[0]>32):
-    screen = shift(LEFT, player[0]-32, screen)
-  elif(player[0]<32):
-    screen = shift(RIGHT, 32 - player[0], screen)
-
-  if(player[1]>32):
-    screen = shift(UP, player[1]-32, screen)
-  elif(player[1]<32):
-    screen = shift(DOWN, 32 - player[1], screen)
-
   reset = True
   with tempfile.TemporaryDirectory() as td:
     model_saved = False
-    model_file = os.path.join(td, "model")
+    model_file = os.path.join("model/", "mineral_shards")
+    print(model_file)
 
     for t in range(max_timesteps):
       if callback is not None:
@@ -281,66 +291,18 @@ def learn(env,
         kwargs['reset'] = reset
         kwargs['update_param_noise_threshold'] = update_param_noise_threshold
         kwargs['update_param_noise_scale'] = True
-      action = act(np.array(screen)[None], update_eps=update_eps, **kwargs)[0]
+
+      action_x = act_x(np.array(screen)[None], update_eps=update_eps, **kwargs)[0]
+
+      action_y = act_y(np.array(screen)[None], update_eps=update_eps, **kwargs)[0]
+
       reset = False
 
       coord = [player[0], player[1]]
       rew = 0
 
-      path_memory_ = np.array(path_memory, copy=True)
-      if(action == 0): #UP
+      coord = [action_x, action_y]
 
-        if(player[1] >= 16):
-          coord = [player[0], player[1] - 16]
-          path_memory_[player[1] - 16 : player[1], player[0]] = -1
-        elif(player[1] > 0):
-          coord = [player[0], 0]
-          path_memory_[0 : player[1], player[0]] = -1
-        #else:
-        #  rew -= 1
-
-      elif(action == 1): #DOWN
-
-        if(player[1] <= 47):
-          coord = [player[0], player[1] + 16]
-          path_memory_[player[1] : player[1] + 16, player[0]] = -1
-        elif(player[1] > 47):
-          coord = [player[0], 63]
-          path_memory_[player[1] : 63, player[0]] = -1
-        #else:
-        #  rew -= 1
-
-      elif(action == 2): #LEFT
-
-        if(player[0] >= 16):
-          coord = [player[0] - 16, player[1]]
-          path_memory_[player[1], player[0] - 16 : player[0]] = -1
-        elif(player[0] < 16):
-          coord = [0, player[1]]
-          path_memory_[player[1], 0 : player[0]] = -1
-        #else:
-        #  rew -= 1
-
-      elif(action == 3): #RIGHT
-
-        if(player[0] <= 47):
-          coord = [player[0] + 16, player[1]]
-          path_memory_[player[1], player[0] : player[0] + 16] = -1
-        elif(player[0] > 47):
-          coord = [63, player[1]]
-          path_memory_[player[1], player[0] : 63] = -1
-        #else:
-        #  rew -= 1
-
-      #else:
-        #Cannot move, give minus reward
-      #  rew -= 1
-
-      #if(path_memory[coord[1],coord[0]] != 0):
-      #  rew -= 0.5
-
-      path_memory = np.array(path_memory_)
-      #print("action : %s Coord : %s" % (action, coord))
 
       if _MOVE_SCREEN not in obs[0].observation["available_actions"]:
         obs = env.step(actions=[sc2_actions.FunctionCall(_SELECT_ARMY, [_SELECT_ALL])])
@@ -353,85 +315,80 @@ def learn(env,
       obs = env.step(actions=new_action)
 
       player_relative = obs[0].observation["screen"][_PLAYER_RELATIVE]
-      new_screen = player_relative + path_memory
+      new_screen = (player_relative == _PLAYER_NEUTRAL).astype(int)
 
       player_y, player_x = (player_relative == _PLAYER_FRIENDLY).nonzero()
       player = [int(player_x.mean()), int(player_y.mean())]
-
-      if(player[0]>32):
-        new_screen = shift(LEFT, player[0]-32, new_screen)
-      elif(player[0]<32):
-        new_screen = shift(RIGHT, 32 - player[0], new_screen)
-
-      if(player[1]>32):
-        new_screen = shift(UP, player[1]-32, new_screen)
-      elif(player[1]<32):
-        new_screen = shift(DOWN, 32 - player[1], new_screen)
 
       rew = obs[0].reward
 
       done = obs[0].step_type == environment.StepType.LAST
 
       # Store transition in the replay buffer.
-      replay_buffer.add(screen, action, rew, new_screen, float(done))
+      replay_buffer_x.add(screen, action_x, rew, new_screen, float(done))
+      replay_buffer_y.add(screen, action_y, rew, new_screen, float(done))
+
       screen = new_screen
 
       episode_rewards[-1] += rew
-      #episode_minerals[-1] += obs[0].reward
+      reward = episode_rewards[-1]
 
       if done:
         obs = env.reset()
         player_relative = obs[0].observation["screen"][_PLAYER_RELATIVE]
-
-        screen = player_relative + path_memory
+        screent = (player_relative == _PLAYER_NEUTRAL).astype(int)
 
         player_y, player_x = (player_relative == _PLAYER_FRIENDLY).nonzero()
         player = [int(player_x.mean()), int(player_y.mean())]
-
-        if(player[0]>32):
-          screen = shift(LEFT, player[0]-32, screen)
-        elif(player[0]<32):
-          screen = shift(RIGHT, 32 - player[0], screen)
-
-        if(player[1]>32):
-          screen = shift(UP, player[1]-32, screen)
-        elif(player[1]<32):
-          screen = shift(DOWN, 32 - player[1], screen)
 
         # Select all marines first
         env.step(actions=[sc2_actions.FunctionCall(_SELECT_ARMY, [_SELECT_ALL])])
         episode_rewards.append(0.0)
         #episode_minerals.append(0.0)
 
-        path_memory = np.zeros((64,64))
-
         reset = True
 
       if t > learning_starts and t % train_freq == 0:
         # Minimize the error in Bellman's equation on a batch sampled from replay buffer.
         if prioritized_replay:
-          experience = replay_buffer.sample(batch_size, beta=beta_schedule.value(t))
-          (obses_t, actions, rewards, obses_tp1, dones, weights, batch_idxes) = experience
+
+          experience_x = replay_buffer_x.sample(batch_size, beta=beta_schedule_x.value(t))
+          (obses_t_x, actions_x, rewards_x, obses_tp1_x, dones_x, weights_x, batch_idxes_x) = experience_x
+
+          experience_y = replay_buffer_y.sample(batch_size, beta=beta_schedule_y.value(t))
+          (obses_t_y, actions_y, rewards_y, obses_tp1_y, dones_y, weights_y, batch_idxes_y) = experience_y
         else:
-          obses_t, actions, rewards, obses_tp1, dones = replay_buffer.sample(batch_size)
-          weights, batch_idxes = np.ones_like(rewards), None
-        td_errors = train(obses_t, actions, rewards, obses_tp1, dones, weights)
+
+          obses_t_x, actions_x, rewards_x, obses_tp1_x, dones_x = replay_buffer_x.sample(batch_size)
+          weights_x, batch_idxes_x = np.ones_like(rewards_x), None
+
+          obses_t_y, actions_y, rewards_y, obses_tp1_y, dones_y = replay_buffer_y.sample(batch_size)
+          weights_y, batch_idxes_y = np.ones_like(rewards_y), None
+
+        td_errors_x = train_x(obses_t_x, actions_x, rewards_x, obses_tp1_x, dones_x, weights_x)
+
+        td_errors_y = train_x(obses_t_y, actions_y, rewards_y, obses_tp1_y, dones_y, weights_y)
+
+
         if prioritized_replay:
-          new_priorities = np.abs(td_errors) + prioritized_replay_eps
-          replay_buffer.update_priorities(batch_idxes, new_priorities)
+          new_priorities_x = np.abs(td_errors_x) + prioritized_replay_eps
+          new_priorities_y = np.abs(td_errors_y) + prioritized_replay_eps
+          replay_buffer_x.update_priorities(batch_idxes_x, new_priorities_x)
+          replay_buffer_y.update_priorities(batch_idxes_y, new_priorities_y)
+
 
       if t > learning_starts and t % target_network_update_freq == 0:
         # Update target network periodically.
-        update_target()
+        update_target_x()
+        update_target_y()
 
       mean_100ep_reward = round(np.mean(episode_rewards[-101:-1]), 1)
-      #mean_100ep_mineral = round(np.mean(episode_minerals[-101:-1]), 1)
       num_episodes = len(episode_rewards)
       if done and print_freq is not None and len(episode_rewards) % print_freq == 0:
         logger.record_tabular("steps", t)
         logger.record_tabular("episodes", num_episodes)
+        logger.record_tabular("reward", reward)
         logger.record_tabular("mean 100 episode reward", mean_100ep_reward)
-        #logger.record_tabular("mean 100 episode mineral", mean_100ep_mineral)
         logger.record_tabular("% time spent exploring", int(100 * exploration.value(t)))
         logger.dump_tabular()
 
@@ -441,19 +398,19 @@ def learn(env,
           if print_freq is not None:
             logger.log("Saving model due to mean reward increase: {} -> {}".format(
               saved_mean_reward, mean_100ep_reward))
-          U.save_state(model_file)
+          DU.save_state(model_file)
           model_saved = True
           saved_mean_reward = mean_100ep_reward
     if model_saved:
       if print_freq is not None:
         logger.log("Restored model with mean reward: {}".format(saved_mean_reward))
-      U.load_state(model_file)
+      DU.load_state(model_file)
 
-  return ActWrapper(act)
+  return ActWrapper(act_x), ActWrapper(act_y)
 
-def intToCoordinate(num, size=64):
-  if size!=64:
-    num = num * size * size // 4096
+def intToCoordinate(num, size=32):
+  if size!=32:
+    num = num * size * size // 1024
   y = num // size
   x = num - size * y
   return [x, y]

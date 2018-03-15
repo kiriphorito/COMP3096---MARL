@@ -1,6 +1,11 @@
 # [Fork] PySC2 OpenAI Gym Environments
 
-This is a fork of [islamelnabarawy/sc2gym](https://github.com/islamelnabarawy/sc2gym).
+This is a fork of [islamelnabarawy/sc2gym](https://github.com/islamelnabarawy/sc2gym) for the COMP3096 Research Group Project.
+
+Install sc2gym with the following command:  
+1. `pip install -e .` if running from the current directory, or  
+2. `pip install -e sc2gym` if running from the repo root directory.
+
 
 The original README.md follows:
 

@@ -1,3 +1,9 @@
+# [Fork] PySC2 OpenAI Gym Environments
+
+This is a fork of [islamelnabarawy/sc2gym](https://github.com/islamelnabarawy/sc2gym).
+
+The original README.md follows:
+
 # PySC2 OpenAI Gym Environments
 
 OpenAI Gym Environments for the StarCraft II PySC2 environment.

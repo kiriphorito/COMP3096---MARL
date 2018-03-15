@@ -1,3 +1,14 @@
+#================================
+# RESEARCH GROUP PROJECT [RGP]
+#================================
+# This modified file is part of the COMP3096 Research Group Project.
+# Changes are marked with `RGP`.
+#
+# Summary of changes:
+# sc2gym uses the old gym api (underscored function names). As of gym 0.9.6 the old API is marked deprecated, but
+# not removed. Nevertheless, when running in 'compatibility' mode the new gym API expects all deprecated functions
+# to be implemented, so the missing _seed() and _render() functions have been provided with simple implementations here.
+
 """
    Copyright 2017 Islam Elnabarawy
 
@@ -16,6 +27,7 @@
 import logging
 
 import gym
+from gym.utils import seeding   # RGP: for the _seed() function.
 from pysc2.env import sc2_env
 from pysc2.env.environment import StepType
 from pysc2.lib import actions
@@ -82,6 +94,15 @@ class SC2GameEnv(gym.Env):
         obs = self._env.reset()[0]
         self.available_actions = obs.observation['available_actions']
         return obs
+
+    # RGP
+    def _seed(self, seed=None):
+        self.np_random, seed = seeding.np_random(seed)
+        return [seed]
+
+    # RGP
+    def _render(self, mode, close=True):
+        logger.info("Asked to render with close: %d.", close)
 
     def save_replay(self, replay_dir):
         self._env.save_replay(replay_dir)

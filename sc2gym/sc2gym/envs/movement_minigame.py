@@ -45,6 +45,7 @@ class BaseMovement1dEnv(SC2GameEnv):
         return self._post_reset()
 
     def _post_reset(self):
+        # C: First thing to do post-reset - select the entire army.
         obs, reward, done, info = self._safe_step([_SELECT_ARMY, _SELECT_ALL])
         obs = self._extract_observation(obs)
         return obs
@@ -84,6 +85,7 @@ class BaseMovement1dEnv(SC2GameEnv):
         return obs
 
     def _translate_action(self, action):
+        # C: Actions for movement minigames are always _MOVE_SCREEN.
         if action < 0 or action > self.action_space.n:
             return [_NO_OP]
         screen_shape = self.observation_spec[0]["feature_screen"][1:]

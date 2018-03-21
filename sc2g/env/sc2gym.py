@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def make_env(map_name, **kwargs):
+def make_env(map_name, id=0, **kwargs):
     default_args = dict(
         map_name=map_name,
         feature_screen_size=84,
@@ -30,7 +30,7 @@ def make_env(map_name, **kwargs):
     )
     args = {**default_args, **kwargs}
     env = SC2Env(**args)
-    return SC2GymEnv(env)
+    return SC2GymEnv(env, id=id)
 
 
 class SC2GymEnv(gym.Env):
@@ -62,7 +62,7 @@ class SC2GymEnv(gym.Env):
 
     # Called whenever a new episode starts.
     def reset(self):
-        timesteps: Tuple[TimeStep] = self.sc2_env.reset()
+        timesteps = self.sc2_env.reset()
         timestep = timesteps[0]
         obs, _, _, _ = self.convert_step(timestep)
         self.available_actions = timestep.observation['available_actions']
@@ -108,7 +108,7 @@ class SC2GymEnv(gym.Env):
         return timestep
 
     def step(self, action) -> Tuple[Any, float, bool, Dict]:
-        timestep: TimeStep = self._step(action)
+        timestep = self._step(action)
 
         if timestep.last():
             self.episode_report(timestep)

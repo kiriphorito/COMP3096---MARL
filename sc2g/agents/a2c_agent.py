@@ -12,6 +12,8 @@ from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 # Algorithm
 from baselines.a2c.a2c import learn
 from baselines.a2c.policies import CnnPolicy, LstmPolicy, LnLstmPolicy
+# Policies
+from sc2g.policies.a2c_policy import FullyConvPolicy
 
 
 def train():
@@ -23,7 +25,18 @@ def train():
     )
 
     envs = SubprocVecEnv([partial(make_env, id=i, **env_args) for i in range(FLAGS.envs)])
-    policy_fn = LstmPolicy
+
+    policy_fn = CnnPolicy
+    if FLAGS.policy == 'cnn':
+        policy_fn = CnnPolicy
+    elif FLAGS.policy == 'lstm':
+        policy_fn = LstmPolicy
+    elif FLAGS.policy == 'lnlstm':
+        policy_fn = LnLstmPolicy
+    elif FLAGS.policy == 'fullyconv':
+        policy_fn = FullyConvPolicy
+    else:
+        print("Invalid policy function! Defaulting to {}.".format(policy_fn))
 
     try:
         learn(
@@ -51,11 +64,12 @@ def main():
     flags.DEFINE_bool("visualize", False, "Show python visualisation")
 
     # Algo parameters
+    flags.DEFINE_string("policy", "cnn", "The policy function to use.")
     flags.DEFINE_string("lrschedule", "constant",
                         "linear or constant, learning rate schedule for baselines a2c")
-    flags.DEFINE_float("learning_rate", 3e-4, "learning rate")
-    flags.DEFINE_float("value_weight", 1.0, "value function loss weight")
-    flags.DEFINE_float("entropy_weight", 1e-5, "entropy loss weight")
+    flags.DEFINE_float("learning_rate", 7e-4, "learning rate")
+    flags.DEFINE_float("value_weight", 0.5, "value function loss weight")
+    flags.DEFINE_float("entropy_weight", 0.01, "entropy loss weight")
 
     train()
 

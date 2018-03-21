@@ -107,6 +107,7 @@ class SC2GymEnv(gym.Env):
 
         return timestep
 
+    # Returns gym observation
     def step(self, action) -> Tuple[Any, float, bool, Dict]:
         timestep = self._step(action)
 

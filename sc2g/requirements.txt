@@ -1,0 +1,2 @@
+-e ../pysc2
+git+https://github.com/now-raymond/baselines.git@v0.1.5#egg=baselines

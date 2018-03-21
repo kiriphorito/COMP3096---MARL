@@ -1,3 +1,8 @@
+#================================
+# RESEARCH GROUP PROJECT [RGP]
+#================================
+# This file is part of the COMP3096 Research Group Project.
+
 # System
 import logging
 
@@ -92,7 +97,7 @@ class SC2GymEnv(gym.Env):
         action = FUNCTIONS.Move_screen("now", coords[::-1])  # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
 
         if action.function not in self.available_actions:
-            logger.warning("Attempted unavailable action {}.".format(action))
+            # logger.warning("Attempted unavailable action {}.".format(action))
             # action = FUNCTIONS.no_op()
             action = FUNCTIONS.select_army("select")
 

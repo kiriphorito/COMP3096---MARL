@@ -1,3 +1,8 @@
+#================================
+# RESEARCH GROUP PROJECT [RGP]
+#================================
+# This file is part of the COMP3096 Research Group Project.
+
 # ===============
 # Imports
 # ===============
@@ -14,7 +19,12 @@ from baselines import deepq
 def train():
     FLAGS(sys.argv)
 
-    env = make_env(FLAGS.map_name)
+    env = make_env(
+        map_name=FLAGS.map_name,
+        feature_screen_size=FLAGS.screen_size,
+        feature_minimap_size=FLAGS.minimap_size,
+        visualize=FLAGS.visualize,
+    )
 
     model = deepq.models.cnn_to_mlp(
         convs=[(32, 8, 4), (64, 4, 2), (64, 3, 1)],
@@ -53,6 +63,8 @@ def train():
 
 def main():
     flags.DEFINE_string("map_name", "CollectMineralShards", "Name of the map")
+    flags.DEFINE_integer("screen_size", 84, "Feature screen size")
+    flags.DEFINE_integer("minimap_size", 64, "Feature minimap size")
     flags.DEFINE_bool("visualize", False, "Show python visualisation")
 
     train()

@@ -1,7 +1,9 @@
-# RGP
+#================================
+# RESEARCH GROUP PROJECT [RGP]
+#================================
 # This file is from pekaalto/sc2atari.
 # Source: https://github.com/pekaalto/sc2atari
-# Important: Note that the action space (ac_space) parameter is *ignored*!
+# Important: Note that the action space (ac_space) parameter is never used and effectively *ignored*!
 
 import tensorflow as tf
 from pysc2.lib.features import SCREEN_FEATURES

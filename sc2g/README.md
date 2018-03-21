@@ -13,3 +13,9 @@ Run `pip install -r requirements.txt` to install the correct versions of pysc2 a
 
 ## Installation
 Run `pip install -e .` in this folder to make the sc2g package available to other Python scripts.
+
+## Running the agents
+DQN Agent: `python3 -m sc2g.agents.dqn_agent`  
+A2C Agent: `python3 -m sc2g.agents.a2c_agent --envs 8` (will spin up 8 instances of SC2 in parallel - adjust as required.)
+
+More to come...

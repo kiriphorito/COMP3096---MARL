@@ -32,7 +32,6 @@ def train():
             seed=1,
             total_timesteps=int(1e6) * FLAGS.frames,
             lrschedule=FLAGS.lrschedule,
-            nstack=1, #must be 1 for FullyConvPolicy above
             ent_coef=FLAGS.entropy_weight,
             vf_coef=FLAGS.value_weight,
             max_grad_norm=1.0,
@@ -47,8 +46,16 @@ def train():
 
 def main():
     flags.DEFINE_string("map_name", "CollectMineralShards", "Name of the map")
-    flags.DEFINE_integer("envs", 1, "Number of sc2 environments to run in parallel")
+    flags.DEFINE_integer("envs", 2, "Number of sc2 environments to run in parallel")
+    flags.DEFINE_integer("frames", 40, "Number of frames in millions")
     flags.DEFINE_bool("visualize", False, "Show python visualisation")
+
+    # Algo parameters
+    flags.DEFINE_string("lrschedule", "constant",
+                        "linear or constant, learning rate schedule for baselines a2c")
+    flags.DEFINE_float("learning_rate", 3e-4, "learning rate")
+    flags.DEFINE_float("value_weight", 1.0, "value function loss weight")
+    flags.DEFINE_float("entropy_weight", 1e-5, "entropy loss weight")
 
     train()
 

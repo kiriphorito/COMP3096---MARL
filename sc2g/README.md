@@ -15,7 +15,23 @@ Run `pip install -r requirements.txt` to install the correct versions of pysc2 a
 Run `pip install -e .` in this folder to make the sc2g package available to other Python scripts.
 
 ## Running the agents
-DQN Agent: `python3 -m sc2g.agents.dqn_agent`  
-A2C Agent: `python3 -m sc2g.agents.a2c_agent --envs 8` (will spin up 8 instances of SC2 in parallel - adjust as required.)
+### DQN Agent
+```
+python3 -m sc2g.agents.dqn_agent \
+--map_name=CollectMineralShards \
+--screen_size=16 \
+--minimap_size=16 \
+--learning_rate=0.0005 \
+--max_timesteps=2000000 \
+--learning_starts=10000 \
+--exploration_fraction=0.5 \
+--exploration_final_eps=0.02
+```  
 
-More to come...
+### A2C Agent
+```
+python3 -m sc2g.agents.a2c_agent --envs 8
+```
+(will spin up 8 instances of SC2 in parallel - adjust as required.)
+
+More algos to come...

@@ -123,6 +123,7 @@ def main():
     flags.DEFINE_bool("prioritized_replay",             True,       "Whether prioritized replay is used")  # True
 
     FLAGS(sys.argv)
+    print(sys.argv)
     global save_model_freq  # Make this global since it's checked every timestep
     save_model_freq = FLAGS.save_model_freq
 

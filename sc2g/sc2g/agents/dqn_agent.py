@@ -37,6 +37,7 @@ def train():
 
     # Stack frames (memory optimisation)
     if FLAGS.num_stack_frames > 0:
+        print("Stack frames enabled: n=%d" % FLAGS.num_stack_frames)
         env = FrameStack(env, FLAGS.num_stack_frames)
 
     model = deepq.models.cnn_to_mlp(
@@ -108,7 +109,7 @@ def main():
     flags.DEFINE_integer("print_freq",                  10,         "How often training progress is printed, in episodes")  # 100
     flags.DEFINE_integer("checkpoint_freq",             10000,      "How often to checkpoint the model (in temporary directory), in steps")  # 10000
     flags.DEFINE_integer("save_model_freq",             250000,     "How often to save the model, in steps")
-    flags.DEFINE_integer("num_stack_frames",            4,          "Number of frames to stack together (memory optimisation). Set 0 to disable stacking.")
+    flags.DEFINE_integer("num_stack_frames",            0,          "Number of frames to stack together (memory optimisation). Set 0 to disable stacking.")
 
     # Algo hyperparameters
     flags.DEFINE_float("learning_rate",                 1e-5,       "Learning rate for adam optimizer") # 5e-4

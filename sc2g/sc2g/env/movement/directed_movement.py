@@ -29,11 +29,15 @@ logger.setLevel(logging.INFO)
 class DirectedMovementEnv(UnitTrackingEnv):
     def __init__(self, sc2_env: SC2Env, **kwargs):
         super().__init__(sc2_env, **kwargs)
-        self.action_space = Discrete(8)  # set to 4 for up, down, left, right, 8 for 8-way
+        self.action_space = Discrete(9)  # set to 4 for up, down, left, right, 8 for 8-way, 9th is no-op
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         if FUNCTIONS.Move_screen.id not in self.available_actions:
             return[FUNCTIONS.select_army("select")]
+
+        # 8 = no-op
+        if (gym_action >= 8):
+            return [FUNCTIONS.no_op()]
 
         # player_xy = [(unit.x, unit.y) for unit in self.state["player_units"]][0]
 
@@ -54,6 +58,7 @@ class DirectedMovementEnv(UnitTrackingEnv):
         # 5: Up + right
         # 6: Down + left
         # 7: Down + right
+        # 8: No-op
         if gym_action in (0, 4, 5):
             # up
             target_xy[1] = 0

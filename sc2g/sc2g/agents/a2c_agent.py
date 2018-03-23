@@ -12,7 +12,7 @@ from absl import flags
 from absl.flags import FLAGS
 from functools import partial
 # Environment
-from sc2g.env.sc2gym import make_env
+from sc2g.env.movement import MovementEnv
 from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 # Algorithm
 from baselines.a2c.a2c import learn
@@ -31,7 +31,7 @@ def train():
         visualize=FLAGS.visualize,
     )
 
-    envs = SubprocVecEnv([partial(make_env, id=i, **env_args) for i in range(FLAGS.envs)])
+    envs = SubprocVecEnv([partial(MovementEnv.make_env, id=i, **env_args) for i in range(FLAGS.envs)])
 
     policy_fn = CnnPolicy
     if FLAGS.policy == 'cnn':

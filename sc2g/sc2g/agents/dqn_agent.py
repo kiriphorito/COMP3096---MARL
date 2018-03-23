@@ -14,6 +14,7 @@ from absl.flags import FLAGS
 # Environment
 import sc2g
 from sc2g.env.movement import MovementEnv, DirectedMovementEnv, MultiMovementEnv
+from sc2g.env.attack import AttackEnv, DirectedAttackEnv, MultiAttackEnv
 # Algorithm
 from baselines import deepq
 from baselines.common.atari_wrappers import FrameStack

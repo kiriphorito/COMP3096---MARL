@@ -7,7 +7,7 @@
 # Imports
 # ===============
 # System / Settings / Tools
-import sys
+import sys, os
 from absl import flags
 from absl.flags import FLAGS
 from functools import partial
@@ -29,6 +29,8 @@ def train():
         feature_screen_size=FLAGS.screen_size,
         feature_minimap_size=FLAGS.minimap_size,
         visualize=FLAGS.visualize,
+        save_replay_episodes=FLAGS.save_replay_episodes,
+        replay_dir=FLAGS.replay_dir,
     )
 
     envs = SubprocVecEnv([partial(MovementEnv.make_env, id=i, **env_args) for i in range(FLAGS.envs)])
@@ -66,22 +68,23 @@ def train():
 
 def main():
     # Common
-    flags.DEFINE_string("map_name", "CollectMineralShards", "Name of the map")
-    flags.DEFINE_integer("screen_size", 32, "Feature screen size")
-    flags.DEFINE_integer("minimap_size", 32, "Feature minimap size")
-    flags.DEFINE_bool("visualize", False, "Show python visualisation")
+    flags.DEFINE_string("map_name", "CollectMineralShards",         "Name of the map")
+    flags.DEFINE_integer("screen_size",                 32,         "Feature screen size")
+    flags.DEFINE_integer("minimap_size",                32,         "Feature minimap size")
+    flags.DEFINE_bool("visualize",                      False,      "Show python visualisation")
+    flags.DEFINE_integer("save_replay_episodes",        500,        "How often to save replays, in episodes. 0 to disable saving replays.")
+    flags.DEFINE_string("replay_dir", os.path.abspath("Replays"),   "Directory to save replays.")
 
     # Algo-specific
-    flags.DEFINE_integer("envs", 2, "Number of sc2 environments to run in parallel")
-    flags.DEFINE_integer("frames", 40, "Number of frames in millions")
+    flags.DEFINE_integer("envs",                        2,          "Number of sc2 environments to run in parallel")
+    flags.DEFINE_integer("frames",                      40,         "Number of frames in millions")
 
     # Algo hyperparameters
-    flags.DEFINE_string("policy", "fullyconv", "The policy function to use.")
-    flags.DEFINE_string("lrschedule", "constant",
-                        "linear or constant, learning rate schedule for baselines a2c")
-    flags.DEFINE_float("learning_rate", 3e-4, "learning rate")
-    flags.DEFINE_float("value_weight", 1.0, "value function loss weight")
-    flags.DEFINE_float("entropy_weight", 1e-5, "entropy loss weight")
+    flags.DEFINE_string("policy",                      "fullyconv", "The policy function to use")
+    flags.DEFINE_string("lrschedule",                  "constant",  "Linear or constant, learning rate schedule for baselines a2c")
+    flags.DEFINE_float("learning_rate",                 3e-4,       "Learning rate")
+    flags.DEFINE_float("value_weight",                  1.0,        "Value function loss weight")
+    flags.DEFINE_float("entropy_weight",                1e-5,       "Entropy loss weight")
 
     train()
 

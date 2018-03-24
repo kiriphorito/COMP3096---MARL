@@ -30,8 +30,11 @@ python3 -m sc2g.agents.dqn_agent \
 
 ### A2C Agent
 ```
-python3 -m sc2g.agents.a2c_agent --envs 8
+python3 -m sc2g.agents.a2c_agent \
+--map_name=CollectMineralShards \
+--envs=8 \
+--policy=fullyconv
 ```
-(will spin up 8 instances of SC2 in parallel - adjust as required.)
+(will spin up 8 instances of SC2 in parallel - adjust `envs` as required.)
 
 More algos to come...

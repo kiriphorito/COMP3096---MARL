@@ -11,7 +11,7 @@ import gym
 from gym.spaces import Box, Discrete
 
 # PySC2 Imports
-from pysc2.env.sc2_marl_env import SC2MarlEnv
+from pysc2.env.sc2_env import SC2Env
 from pysc2.env.environment import TimeStep
 from pysc2.lib.actions import FUNCTIONS, FunctionCall
 from pysc2.lib.features import SCREEN_FEATURES
@@ -28,7 +28,7 @@ logger.setLevel(logging.INFO)
 
 
 class SC2GymEnv(gym.Env):
-    def __init__(self, sc2_env: SC2MarlEnv,
+    def __init__(self, sc2_env: SC2Env,
                  id=0,
                  print_freq=1,
                  agg_n_episodes=100,
@@ -43,7 +43,7 @@ class SC2GymEnv(gym.Env):
 
         # Get observation and action spaces from the SC2 environment
         self.observation_spec = self.sc2_env.observation_spec()
-        self.screen_shape = self.observation_spec[0]["feature_screen"][1:]
+        self.screen_shape = self.observation_spec["screen"][1:]
         screen_shape_observation = self.screen_shape + (1,)  # RGP: Switched this around to put 1 at the back - this
         # is what tensorflow expects
 
@@ -63,12 +63,11 @@ class SC2GymEnv(gym.Env):
     def make_env(cls, map_name, id=0, **kwargs):
         default_args = dict(
             map_name=map_name,
-            feature_screen_size=84,
-            feature_minimap_size=64,
-            use_feature_units=True,
+            screen_size_px=(64, 64),
+            minimap_size_px=(64, 64),
         )
         args = {**default_args, **kwargs}
-        env = SC2MarlEnv(**args)
+        env = SC2Env(**args)
         return cls(env, id=id)
 
     # ===============================
@@ -82,6 +81,7 @@ class SC2GymEnv(gym.Env):
         self.update_state(timestep)
         obs, _, _, _ = self.convert_step(timestep)
         self.available_actions = timestep.observation['available_actions']
+        print("RESETTING!")
         return obs
 
     # Returns gym observation
@@ -105,17 +105,19 @@ class SC2GymEnv(gym.Env):
     # Converts a pysc2 TimeStep to a Gym step.
     @staticmethod
     def convert_step(timestep: TimeStep) -> Tuple[Any, float, bool, Dict]:
-        obs = timestep.observation["feature_screen"][SCREEN_FEATURES.player_relative.index]
+        obs = timestep.observation["screen"][SCREEN_FEATURES.player_relative.index]
         obs = obs.view(type=np.ndarray)  # Get a standard ndarray view instead of pysc2's subclass (NamedNumpyArray)
 
         # Reshape from (84, 84) to (84, 84, 1). '...' is for slicing higher-dimensional data structures and means
         # insert as many full slices (:) to extend the multi-dimensional slice to all dimensions.
         # Ref: https://stackoverflow.com/questions/118370/how-do-you-use-the-ellipsis-slicing-syntax-in-python
-        obs = obs[..., np.newaxis]
+        obs2 = obs[..., np.newaxis]
 
-        done = timestep.last()
+        done = False
         info = {}
-        return obs, timestep.reward, done, info
+        if (timestep.reward > 0):
+            print("reward: %f" % timestep.reward)
+        return obs2, timestep.reward, done, info
 
     def _step(self, action) -> TimeStep:
         actions = self.get_sc2_action(action)

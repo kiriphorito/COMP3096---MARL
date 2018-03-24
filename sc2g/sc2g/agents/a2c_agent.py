@@ -12,7 +12,7 @@ from absl import flags
 from absl.flags import FLAGS
 from functools import partial
 # Environment
-from sc2g.env.movement import MovementEnv
+from sc2g.env.movement.basic_movement import MovementEnv
 from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 # Algorithm
 from baselines.a2c.a2c import learn
@@ -26,8 +26,8 @@ def train():
 
     env_args = dict(
         map_name=FLAGS.map_name,
-        feature_screen_size=FLAGS.screen_size,
-        feature_minimap_size=FLAGS.minimap_size,
+        screen_size_px=(FLAGS.screen_size,) * 2,
+        minimap_size_px=(FLAGS.minimap_size,) * 2,
         visualize=FLAGS.visualize,
     )
 
@@ -52,6 +52,7 @@ def train():
             seed=1,
             total_timesteps=int(1e6) * FLAGS.frames,
             lrschedule=FLAGS.lrschedule,
+            nstack=1,  # must be 1 for FullyConvPolicy
             ent_coef=FLAGS.entropy_weight,
             vf_coef=FLAGS.value_weight,
             max_grad_norm=1.0,
@@ -67,8 +68,8 @@ def train():
 def main():
     # Common
     flags.DEFINE_string("map_name", "CollectMineralShards", "Name of the map")
-    flags.DEFINE_integer("screen_size", 84, "Feature screen size")
-    flags.DEFINE_integer("minimap_size", 64, "Feature minimap size")
+    flags.DEFINE_integer("screen_size", 32, "Feature screen size")
+    flags.DEFINE_integer("minimap_size", 32, "Feature minimap size")
     flags.DEFINE_bool("visualize", False, "Show python visualisation")
 
     # Algo-specific
@@ -76,12 +77,12 @@ def main():
     flags.DEFINE_integer("frames", 40, "Number of frames in millions")
 
     # Algo hyperparameters
-    flags.DEFINE_string("policy", "cnn", "The policy function to use.")
+    flags.DEFINE_string("policy", "fullyconv", "The policy function to use.")
     flags.DEFINE_string("lrschedule", "constant",
                         "linear or constant, learning rate schedule for baselines a2c")
-    flags.DEFINE_float("learning_rate", 7e-4, "learning rate")
-    flags.DEFINE_float("value_weight", 0.5, "value function loss weight")
-    flags.DEFINE_float("entropy_weight", 0.01, "entropy loss weight")
+    flags.DEFINE_float("learning_rate", 3e-4, "learning rate")
+    flags.DEFINE_float("value_weight", 1.0, "value function loss weight")
+    flags.DEFINE_float("entropy_weight", 1e-5, "entropy loss weight")
 
     train()
 

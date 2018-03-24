@@ -44,10 +44,12 @@ class MovementEnv(SC2GymEnv):
         coords = np.unravel_index(gym_action, (self.screen_shape[0], self.screen_shape[1]))
 
         # PySC2 uses different conventions for observations (y,x) and actions (x,y)
-        action = FUNCTIONS.Move_screen("now", coords[::-1])  # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
+        # action = FUNCTIONS.Move_screen("now", coords[::-1])  # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
+        action = FunctionCall(FUNCTIONS.Move_screen.id, [[0], coords[::-1]])
 
         if action.function not in self.available_actions:
             # logger.warning("Attempted unavailable action {}.".format(action))
-            action = FUNCTIONS.select_army("select")
+            # action = FUNCTIONS.select_army("select")
+            action = FunctionCall(FUNCTIONS.select_army.id, [[0]])
 
         return [action]

@@ -9,13 +9,13 @@ import tensorflow as tf
 from pysc2.lib.features import SCREEN_FEATURES
 from tensorflow.contrib import layers
 from baselines.a2c.utils import sample
-from baselines.common.distributions import make_pdtype
 
 
 class FullyConvPolicy:
-    def __init__(self, sess, ob_space, ac_space, nbatch, nsteps, reuse=False):
+    def __init__(self, sess, ob_space, ac_space, nenv, nsteps, nstack, reuse=False):
+        nbatch = nenv * nsteps
         nh, nw, nc = ob_space.shape
-        ob_shape = (nbatch, nh, nw, nc * 1)
+        ob_shape = (nbatch, nh, nw, nc * nstack)
         X = tf.placeholder(tf.int32, ob_shape)  # obs
 
         with tf.variable_scope("fullyconv_model", reuse=reuse):
@@ -69,17 +69,13 @@ class FullyConvPolicy:
                 scope="value_out"
             )
 
-        self.pdtype = make_pdtype(ac_space)
-        self.pd = self.pdtype.pdfromflat(pi)
-
         v0 = vf[:, 0]
         a0 = sample(pi)
-        neglogp0 = self.pd.neglogp(a0)
-        self.initial_state = None  # not stateful
+        self.initial_state = []  # not stateful
 
         def step(ob, *_args, **_kwargs):
-            a, v, neglogp = sess.run([a0, v0, neglogp0], {X: ob})
-            return a, v, self.initial_state, neglogp
+            a, v = sess.run([a0, v0], {X: ob})
+            return a, v, []  # dummy state
 
         def value(ob, *_args, **_kwargs):
             return sess.run(v0, {X: ob})

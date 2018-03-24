@@ -44,8 +44,7 @@ class SC2GymEnv(gym.Env):
         # Get observation and action spaces from the SC2 environment
         self.observation_spec = self.sc2_env.observation_spec()
         self.screen_shape = self.observation_spec[0]["feature_screen"][1:]
-        screen_shape_observation = self.screen_shape + (1,)  # RGP: Switched this around to put 1 at the back - this
-        # is what tensorflow expects
+        screen_shape_observation = self.screen_shape + (1,)  # HWC format - height, width, channels. One channel for player_relative.
 
         # Convert to Gym spaces and set observation and action space
         self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)

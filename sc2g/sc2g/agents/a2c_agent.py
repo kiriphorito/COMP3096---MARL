@@ -67,8 +67,8 @@ def train():
 def main():
     # Common
     flags.DEFINE_string("map_name", "CollectMineralShards", "Name of the map")
-    flags.DEFINE_integer("screen_size", 84, "Feature screen size")
-    flags.DEFINE_integer("minimap_size", 64, "Feature minimap size")
+    flags.DEFINE_integer("screen_size", 32, "Feature screen size")
+    flags.DEFINE_integer("minimap_size", 32, "Feature minimap size")
     flags.DEFINE_bool("visualize", False, "Show python visualisation")
 
     # Algo-specific
@@ -76,12 +76,12 @@ def main():
     flags.DEFINE_integer("frames", 40, "Number of frames in millions")
 
     # Algo hyperparameters
-    flags.DEFINE_string("policy", "cnn", "The policy function to use.")
+    flags.DEFINE_string("policy", "fullyconv", "The policy function to use.")
     flags.DEFINE_string("lrschedule", "constant",
                         "linear or constant, learning rate schedule for baselines a2c")
-    flags.DEFINE_float("learning_rate", 7e-4, "learning rate")
-    flags.DEFINE_float("value_weight", 0.5, "value function loss weight")
-    flags.DEFINE_float("entropy_weight", 0.01, "entropy loss weight")
+    flags.DEFINE_float("learning_rate", 3e-4, "learning rate")
+    flags.DEFINE_float("value_weight", 1.0, "value function loss weight")
+    flags.DEFINE_float("entropy_weight", 1e-5, "entropy loss weight")
 
     train()
 

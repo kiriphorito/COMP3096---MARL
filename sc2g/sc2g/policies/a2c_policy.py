@@ -57,7 +57,7 @@ class FullyConvPolicy:
 
             f = layers.fully_connected(
                 layers.flatten(h2),
-                num_outputs=64,
+                num_outputs=64,  # RGP: shouldn't this be 256 units? ('fully connected layer with 256 units', in DeepMind paper)
                 activation_fn=tf.nn.relu,
                 scope="value_h_layer"
             )

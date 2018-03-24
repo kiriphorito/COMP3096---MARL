@@ -34,27 +34,38 @@ class TupleEx(Tuple):
         for i in range(0, len(spaces)):
             self.n *= spaces[i].n
 
-class MultiMovementEnv(UnitTrackingEnv):
+class MultiAttackEnv(UnitTrackingEnv):
     def __init__(self, sc2_env, **kwargs):
         super().__init__(sc2_env, **kwargs)
 
-        self.number_of_marines = 2 # hardcoded
+        # Number of marines (hardcoded)
+        self.number_of_marines = 9
         # Specify observation and action space
         screen_shape_observation = self.screen_shape + (1,)
         self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
         self.resolution = self.screen_shape[0] * self.screen_shape[1]  # (width x height)
-        self.action_space = Discrete(self.resolution ** self.number_of_marines)
+        self.action_space = Discrete(self.resolution * self.number_of_marines)
         self.unravel_shape = (self.screen_shape[0], self.screen_shape[1]) * self.number_of_marines
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         # Get coords by unravelling action. DQN only supports returning an integer as action.
         # How unravel works:
         # Ref: https://www.quora.com/What-is-a-simple-intuitive-example-for-the-unravel_index-in-Python
-        coords = np.unravel_index(gym_action, self.unravel_shape)
-        coords = [(coords[i], coords[i+1]) for i in range(0, len(coords), 2)]
+
+        idx = int(gym_action / self.resolution)
+        coords = gym_action % self.resolution
+        coords = np.unravel_index(coords, self.unravel_shape)
+        coords = (coords[0], coords[1])
+
+        target_unit = self.state['player_units_stable'][idx]
+        target_tag = target_unit.tag.item()
+        player_unit_tags = [unit.tag.item() for unit in self.state["player_units"]]  # .item() to convert numpy.int64 to native python type (int)
 
         # PySC2 uses different conventions for observations (y,x) and actions (x,y)
         # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
-        actions = [FUNCTIONS.move_unit(tag, "now", coord[::-1]) for tag, coord in zip(self.state['player_unit_stable_tags'], coords)]
+        if target_tag not in player_unit_tags:
+            actions = [FUNCTIONS.no_op()]
+        else:
+            actions = [FUNCTIONS.move_unit(target_tag, "now", coords[::-1])]
 
         return actions

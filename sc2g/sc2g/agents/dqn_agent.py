@@ -14,6 +14,7 @@ from absl.flags import FLAGS
 # Environment
 import sc2g
 from sc2g.env.movement import MovementEnv, DirectedMovementEnv, MultiMovementEnv
+from sc2g.env.attack import AttackEnv, DirectedAttackEnv, MultiAttackEnv
 # Algorithm
 from baselines import deepq
 from baselines.common.atari_wrappers import FrameStack
@@ -103,7 +104,7 @@ def main():
     flags.DEFINE_string("replay_dir", os.path.abspath("Replays"),   "Directory to save replays, relative to the current working directory.")
 
     # Environment
-    flags.DEFINE_string("env", "movement.DirectedMovementEnv", "Which environment to use.")
+    flags.DEFINE_string("env", "movement.MovementEnv", "Which environment to use.")
 
     # Algo-specific settings
     flags.DEFINE_integer("print_freq",                  10,         "How often training progress is printed, in episodes")  # 100

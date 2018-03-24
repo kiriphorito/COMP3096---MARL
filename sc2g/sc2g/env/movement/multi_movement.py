@@ -44,7 +44,8 @@ class MultiMovementEnv(UnitTrackingEnv):
         # self.action_space = Discrete((self.screen_shape[0] * self.screen_shape[1]) ** 2)  # (width x height) ^ 2
         self.resolution = self.screen_shape[0] * self.screen_shape[1]  # (width x height)
         # self.action_space = MultiDiscreteEx([self.dimensions, self.dimensions])
-        self.action_space = TupleEx([Discrete(self.resolution), Discrete(self.resolution)])
+        # self.action_space = TupleEx([Discrete(self.resolution), Discrete(self.resolution)])
+        self.action_space = Discrete(self.resolution ** 2)
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         # Get coords by unravelling action. DQN only supports returning an integer as action.

@@ -104,7 +104,7 @@ def main():
     flags.DEFINE_string("replay_dir", os.path.abspath("Replays"),   "Directory to save replays, relative to the current working directory.")
 
     # Environment
-    flags.DEFINE_string("env", "movement.DirectedMovementEnv", "Which environment to use.")
+    flags.DEFINE_string("env", "attack.AttackEnv", "Which environment to use.")
 
     # Algo-specific settings
     flags.DEFINE_integer("print_freq",                  10,         "How often training progress is printed, in episodes")  # 100

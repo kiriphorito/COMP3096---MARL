@@ -79,7 +79,7 @@ class SC2GymEnv(gym.Env):
     def reset(self):
         timesteps = self.sc2_env.reset()
         timestep = timesteps[0]
-        self.update_state(timestep)
+        self.update_state(timestep, True)
         obs, _, _, _ = self.convert_step(timestep)
         self.available_actions = timestep.observation['available_actions']
         return obs
@@ -87,7 +87,7 @@ class SC2GymEnv(gym.Env):
     # Returns gym observation
     def step(self, action) -> Tuple[Any, float, bool, Dict]:
         timestep = self._step(action)
-        self.update_state(timestep)
+        self.update_state(timestep, False)
 
         if timestep.last():
             self.episode_report(timestep)
@@ -162,6 +162,6 @@ class SC2GymEnv(gym.Env):
 
     # This is called at each timestep and when the environment resets.
     # Subclasses can implement this function to store/track game state across timesteps.
-    def update_state(self, timestep: TimeStep):
+    def update_state(self, timestep: TimeStep, is_new_episode):
         # Do something with self.state.
         pass

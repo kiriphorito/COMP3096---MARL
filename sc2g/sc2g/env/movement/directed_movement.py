@@ -35,11 +35,9 @@ class DirectedMovementEnv(UnitTrackingEnv):
         if FUNCTIONS.Move_screen.id not in self.available_actions:
             return[FUNCTIONS.select_army("select")]
 
-        # 8 = no-op
-        if (gym_action >= 8):
+        # 0 = no-op
+        if gym_action == 0:
             return [FUNCTIONS.no_op()]
-
-        # player_xy = [(unit.x, unit.y) for unit in self.state["player_units"]][0]
 
         player_units_y, player_units_x = (self.state["player_relative"] == features.PlayerRelative.SELF).nonzero()
 
@@ -50,36 +48,39 @@ class DirectedMovementEnv(UnitTrackingEnv):
         player_units_xy = [int(player_units_x.mean()), int(player_units_y.mean())]
         target_xy = player_units_xy
 
-        # 0: Up
-        # 1: Down
-        # 2: Left
-        # 3: Right
-        # 4: Up + left
-        # 5: Up + right
-        # 6: Down + left
-        # 7: Down + right
-        # 8: No-op
-        if gym_action in (0, 4, 5):
-            # up
-            target_xy[1] = 0
-            pass
-        if gym_action in (1, 6, 7):
-            # down
-            target_xy[1] = self.screen_shape[1] - 1
-            pass
-        if gym_action in (2, 4, 6):
-            # left
-            target_xy[0] = 0
-            pass
-        if gym_action in (3, 5, 7):
-            # right
-            target_xy[0] = self.screen_shape[0] - 1
-            pass
+        #  0: No-op
+        #  1: Up
+        #  2: Down
+        #  3: Left
+        #  4: Right
+        #  5: Up + Left
+        #  6: Up + Right
+        #  7: Down + Left
+        #  8: Down + Right
 
+        # Determine target position
+        if gym_action in (1, 5, 6):
+            # Up
+            target_xy[1] = 0
+
+        if gym_action in (2, 7, 8):
+            # Down
+            target_xy[1] = self.screen_shape[1]-1
+
+        if gym_action in (3, 5, 7):
+            # Left
+            target_xy[0] = 0
+
+        if gym_action in (4, 6, 8):
+            # Right
+            target_xy[0] = self.screen_shape[0]-1
+
+        # Assign action function
+        # Move_screen
         action = FUNCTIONS.Move_screen("now", target_xy)
 
         return [action]
 
-    def update_state(self, timestep: TimeStep):
-        super().update_state(timestep)
+    def update_state(self, timestep: TimeStep, is_new_episode):
+        super().update_state(timestep, is_new_episode)
         self.state["player_relative"] = timestep.observation.feature_screen.player_relative

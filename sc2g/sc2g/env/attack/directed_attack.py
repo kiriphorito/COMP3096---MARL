@@ -68,22 +68,18 @@ class DirectedAttackEnv(UnitTrackingEnv):
         # Determine target position
         if gym_action in (1, 5, 6, 9, 13, 14):
             # Up
-            # target_xy[1] = min(player_units_xy[1]+1, self.screen_shape[1]-1)
-            target_xy[1] = self.screen_shape[1]-1
+            target_xy[1] = 0
 
         if gym_action in (2, 7, 8, 10, 15, 16):
             # Down
-            # target_xy[1] = max(player_units_xy[1]-1, 0)
-            target_xy[1] = 0
+            target_xy[1] = self.screen_shape[1]-1
 
         if gym_action in (3, 5, 7, 11, 13, 15):
             # Left
-            # target_xy[0] = max(player_units_xy[0]-1, 0)
             target_xy[0] = 0
 
         if gym_action in (4, 6, 8, 12, 14, 16):
             # Right
-            # target_xy[0] = min(player_units_xy[0]+1, self.screen_shape[0]-1)
             target_xy[0] = self.screen_shape[0]-1
 
         # Assign action function
@@ -99,6 +95,6 @@ class DirectedAttackEnv(UnitTrackingEnv):
 
         return [action]
 
-    def update_state(self, timestep: TimeStep):
-        super().update_state(timestep)
+    def update_state(self, timestep: TimeStep, is_new_episode):
+        super().update_state(timestep, is_new_episode)
         self.state["player_relative"] = timestep.observation.feature_screen.player_relative

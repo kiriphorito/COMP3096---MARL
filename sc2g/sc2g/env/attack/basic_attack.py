@@ -35,16 +35,23 @@ class AttackEnv(SC2GymEnv):
         # Specify observation and action space
         screen_shape_observation = self.screen_shape + (1,)
         self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
-        self.action_space = Discrete(self.screen_shape[0] * self.screen_shape[1])  # width x height
+        self.resolution = self.screen_shape[0] * self.screen_shape[1]
+        self.action_space = Discrete(self.resolution * 2)  # width x height x (move/attack)
+        self.move_space = self.resolution - 1 # unravel works from 0 to n-1
+        self.unravel_shape = (self.screen_shape[0], self.screen_shape[1])
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         # Get coords by unravelling action.
         # How unravel works:
         # Ref: https://www.quora.com/What-is-a-simple-intuitive-example-for-the-unravel_index-in-Python
-        coords = np.unravel_index(gym_action, (self.screen_shape[0], self.screen_shape[1]))
+        is_attack = gym_action > self.move_space
+        if is_attack: gym_action -= self.resolution
+
+        coords = np.unravel_index(gym_action, self.unravel_shape)
 
         # PySC2 uses different conventions for observations (y,x) and actions (x,y)
-        action = FUNCTIONS.Attack_screen("now", coords[::-1])  # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
+        # ::-1 reverses the tuple i.e. (1,2) becomes (2,1)
+        action = FUNCTIONS.Attack_screen("now", coords[::-1]) if is_attack else FUNCTIONS.Move_screen("now", coords[::-1])
 
         if action.function not in self.available_actions:
             # logger.warning("Attempted unavailable action {}.".format(action))

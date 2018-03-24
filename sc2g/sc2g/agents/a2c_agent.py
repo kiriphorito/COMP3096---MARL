@@ -8,10 +8,12 @@
 # ===============
 # System / Settings / Tools
 import sys, os
+from operator import attrgetter
 from absl import flags
 from absl.flags import FLAGS
 from functools import partial
 # Environment
+import sc2g
 from sc2g.env.movement import MovementEnv
 from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 # Algorithm
@@ -22,7 +24,8 @@ from sc2g.policies.a2c_policy import FullyConvPolicy
 
 
 def train():
-    FLAGS(sys.argv)
+    # Fetch the requested environment set in flags.
+    env_class = attrgetter(FLAGS.env)(sc2g.env)
 
     env_args = dict(
         map_name=FLAGS.map_name,
@@ -33,7 +36,7 @@ def train():
         replay_dir=FLAGS.replay_dir,
     )
 
-    envs = SubprocVecEnv([partial(MovementEnv.make_env, id=i, **env_args) for i in range(FLAGS.envs)])
+    envs = SubprocVecEnv([partial(env_class.make_env, id=i, **env_args) for i in range(FLAGS.envs)])
 
     policy_fn = CnnPolicy
     if FLAGS.policy == 'cnn':
@@ -52,7 +55,7 @@ def train():
             policy_fn,
             envs,
             seed=1,
-            total_timesteps=int(1e6) * FLAGS.frames,
+            total_timesteps=int(1e6 * FLAGS.max_timesteps),
             lrschedule=FLAGS.lrschedule,
             ent_coef=FLAGS.entropy_weight,
             vf_coef=FLAGS.value_weight,
@@ -75,9 +78,12 @@ def main():
     flags.DEFINE_integer("save_replay_episodes",        500,        "How often to save replays, in episodes. 0 to disable saving replays.")
     flags.DEFINE_string("replay_dir", os.path.abspath("Replays"),   "Directory to save replays.")
 
+    # Environment
+    flags.DEFINE_string("env", "movement.MovementEnv", "Which environment to use.")
+
     # Algo-specific
     flags.DEFINE_integer("envs",                        2,          "Number of sc2 environments to run in parallel")
-    flags.DEFINE_integer("frames",                      40,         "Number of frames in millions")
+    flags.DEFINE_float("max_timesteps",                 40,         "Max timesteps, in millions")
 
     # Algo hyperparameters
     flags.DEFINE_string("policy",                      "fullyconv", "The policy function to use")
@@ -85,6 +91,9 @@ def main():
     flags.DEFINE_float("learning_rate",                 3e-4,       "Learning rate")
     flags.DEFINE_float("value_weight",                  1.0,        "Value function loss weight")
     flags.DEFINE_float("entropy_weight",                1e-5,       "Entropy loss weight")
+
+    FLAGS(sys.argv)
+    print(sys.argv)
 
     train()
 

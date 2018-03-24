@@ -10,7 +10,6 @@ from pysc2.lib.features import SCREEN_FEATURES
 from tensorflow.contrib import layers
 from baselines.a2c.utils import sample
 from baselines.common.distributions import make_pdtype
-import math
 
 
 class FullyConvPolicy:
@@ -47,7 +46,7 @@ class FullyConvPolicy:
             )
             pi = layers.flatten(layers.conv2d(
                 h,
-                num_outputs=int(math.sqrt(ac_space.n)), # RGP: Originally 1 (EXPERIMENTAL CHANGE)
+                num_outputs=1,
                 kernel_size=1,
                 stride=1,
                 scope="spatial_action",
@@ -75,7 +74,6 @@ class FullyConvPolicy:
 
         v0 = vf[:, 0]
         a0 = sample(pi)
-        # a0 = self.pd.sample()  # RGP (this is what other baselines policies do)
         neglogp0 = self.pd.neglogp(a0)
         self.initial_state = None  # not stateful
 

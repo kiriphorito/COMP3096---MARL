@@ -33,8 +33,8 @@ class MovementEnv(SC2GymEnv):
         super().__init__(sc2_env, **kwargs)
 
         # Specify observation and action space
-        screen_shape_observation = self.screen_shape + (1,)
-        self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
+        # screen_shape_observation = self.screen_shape + (1,)
+        # self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
         self.action_space = Discrete(self.screen_shape[0] * self.screen_shape[1])  # width x height
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:

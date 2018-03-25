@@ -117,7 +117,7 @@ class SC2GymEnv(gym.Env):
         # Ref: https://stackoverflow.com/questions/118370/how-do-you-use-the-ellipsis-slicing-syntax-in-python
         # obs = obs[..., np.newaxis]
 
-        obs = timestep.observation["rgb_screen"]
+        obs = timestep.observation["rgb_minimap"]
 
         done = timestep.last()
         info = {}

@@ -26,6 +26,11 @@ class UnitTrackingEnv(SC2GymEnv):
         self.state['neutral_units'] = []
 
     def update_state(self, timestep: TimeStep, is_new_episode):
+        # Reset stable units after every episode
+        if is_new_episode:
+            self.state['player_units_stable'] = []
+            self.state['player_unit_stable_tags'] = []
+
         # Get list of player units
         self.state['player_units'] = [unit for unit in timestep.observation.feature_units
                                       if unit.alliance == _PLAYER_SELF]
@@ -43,7 +48,7 @@ class UnitTrackingEnv(SC2GymEnv):
         self.state['neutral_units'].sort(key=lambda unit: unit.tag)
         self.state['enemy_units'].sort(key=lambda unit: unit.tag)
 
-        if is_new_episode:
+        if is_new_episode or len(self.state['player_units_stable']) == 0:
             self.state['player_units_stable'] = copy.deepcopy(self.state['player_units'])
             self.state['player_units_stable'].sort(key=lambda unit: (unit.x, unit.y))
             self.state['player_unit_stable_tags'] = [unit.tag.item() for unit in self.state["player_units_stable"]]

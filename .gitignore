@@ -1,6 +1,8 @@
 # Project Specific
 chris-chris/models
 chris-chris/tensorboard
+Replays/
+**/*.pkl
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/

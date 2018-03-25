@@ -43,11 +43,16 @@ class SC2GymEnv(gym.Env):
 
         # Get observation and action spaces from the SC2 environment
         self.observation_spec = self.sc2_env.observation_spec()
-        self.screen_shape = self.observation_spec[0]["feature_screen"][1:]
-        screen_shape_observation = self.screen_shape + (1,)  # HWC format - height, width, channels. One channel for player_relative.
+        # self.screen_shape = self.observation_spec[0]["feature_screen"][1:]
+        # screen_shape_observation = self.screen_shape + (1,)  # HWC format - height, width, channels. One channel for player_relative.
+
+        # RGB test
+        self.screen_shape = self.observation_spec[0]["rgb_screen"]
+        screen_shape_observation = self.screen_shape  # HWC format - height, width, channels. Three channels (RGB)
 
         # Convert to Gym spaces and set observation and action space
-        self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
+        # self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
+        self.observation_space = Box(low=0, high=255, shape=screen_shape_observation)
         self.action_space = Discrete(self.screen_shape[0] * self.screen_shape[1])  # width x height
 
         # Status tracking
@@ -62,9 +67,9 @@ class SC2GymEnv(gym.Env):
     def make_env(cls, map_name, id=0, **kwargs):
         default_args = dict(
             map_name=map_name,
-            feature_screen_size=84,
-            feature_minimap_size=64,
-            use_feature_units=True,
+            # feature_screen_size=84,
+            # feature_minimap_size=64,
+            # use_feature_units=True,
         )
         args = {**default_args, **kwargs}
         env = SC2MarlEnv(**args)
@@ -104,13 +109,15 @@ class SC2GymEnv(gym.Env):
     # Converts a pysc2 TimeStep to a Gym step.
     @staticmethod
     def convert_step(timestep: TimeStep) -> Tuple[Any, float, bool, Dict]:
-        obs = timestep.observation["feature_screen"][SCREEN_FEATURES.player_relative.index]
-        obs = obs.view(type=np.ndarray)  # Get a standard ndarray view instead of pysc2's subclass (NamedNumpyArray)
+        # obs = timestep.observation["feature_screen"][SCREEN_FEATURES.player_relative.index]
+        # obs = obs.view(type=np.ndarray)  # Get a standard ndarray view instead of pysc2's subclass (NamedNumpyArray)
 
         # Reshape from (84, 84) to (84, 84, 1). '...' is for slicing higher-dimensional data structures and means
         # insert as many full slices (:) to extend the multi-dimensional slice to all dimensions.
         # Ref: https://stackoverflow.com/questions/118370/how-do-you-use-the-ellipsis-slicing-syntax-in-python
-        obs = obs[..., np.newaxis]
+        # obs = obs[..., np.newaxis]
+
+        obs = timestep.observation["rgb_screen"]
 
         done = timestep.last()
         info = {}

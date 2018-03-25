@@ -19,6 +19,8 @@ from sc2g.env.attack import AttackEnv, DirectedAttackEnv, MultiAttackEnv
 from baselines import deepq
 from baselines.common.atari_wrappers import FrameStack
 
+from pysc2.lib import actions
+
 # Globals
 save_model_freq = 0
 
@@ -29,8 +31,11 @@ def train():
 
     env = env_class.make_env(
         map_name=FLAGS.map_name,
-        feature_screen_size=FLAGS.screen_size,
-        feature_minimap_size=FLAGS.minimap_size,
+        # feature_screen_size=FLAGS.screen_size,
+        # feature_minimap_size=FLAGS.minimap_size,
+        rgb_screen_size=FLAGS.screen_size,
+        rgb_minimap_size=FLAGS.minimap_size,
+        # action_space=actions.ActionSpace.RGB, # 1: Features, 2: RGB
         visualize=FLAGS.visualize,
         save_replay_episodes=FLAGS.save_replay_episodes,
         replay_dir=FLAGS.replay_dir,

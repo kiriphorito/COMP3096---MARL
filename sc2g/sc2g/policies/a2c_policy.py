@@ -55,12 +55,59 @@ class FullyConvPolicy:
 
             pi *= 3.0  # make it little bit more deterministic, not sure if good idea
 
+            # RGP
+
+            # pi = layers.fully_connected(
+            #     h,
+            #     256*256,
+            #     activation_fn=None
+            # )
+
+            # another_X = tf.placeholder(tf.int32, (nbatch, 256, 256, nc))  # RGP: 16x16 screen size!
+            # another_x_onehot = layers.one_hot_encoding(
+            #     # assuming we have only one channel
+            #     another_X[:, :, :, 0],
+            #     num_classes=SCREEN_FEATURES.player_relative.scale
+            # )
+            # another_h = layers.conv2d(
+            #     another_x_onehot,
+            #     num_outputs=16,
+            #     kernel_size=5,
+            #     stride=1,
+            #     padding='SAME',
+            #     scope="another_conv1"
+            # )
+            # another_pi = layers.flatten(layers.conv2d(
+            #     another_h,
+            #     num_outputs=1,
+            #     kernel_size=1,
+            #     stride=1,
+            #     scope="another_spatial_action",
+            #     activation_fn=None
+            # ))
+            # another_pi *= 3.0
+            # another_a0 = sample(another_pi)
+
+            # end RGP
+
             f = layers.fully_connected(
                 layers.flatten(h2),
                 num_outputs=64,  # RGP: shouldn't this be 256 units? ('fully connected layer with 256 units', in DeepMind paper)
                 activation_fn=tf.nn.relu,
                 scope="value_h_layer"
             )
+
+            # RGP
+
+            non_spatial_out = layers.fully_connected(
+                f,
+                ac_space.n,
+                activation_fn=None,
+            )
+            another_a0 = sample(non_spatial_out)
+            pi = non_spatial_out
+
+            # end RGP
 
             vf = layers.fully_connected(
                 f,
@@ -78,7 +125,8 @@ class FullyConvPolicy:
         self.initial_state = None  # not stateful
 
         def step(ob, *_args, **_kwargs):
-            a, v, neglogp = sess.run([a0, v0, neglogp0], {X: ob})
+            # a, v, neglogp = sess.run([a0, v0, neglogp0], {X: ob})
+            a, v, neglogp = sess.run([another_a0, v0, neglogp0], {X: ob})  # RGP
             return a, v, self.initial_state, neglogp
 
         def value(ob, *_args, **_kwargs):

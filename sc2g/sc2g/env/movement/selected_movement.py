@@ -45,7 +45,7 @@ class SelectedMovementEnv(UnitTrackingEnv):
         self.observation_space = Box(low=0, high=SCREEN_FEATURES.player_relative.scale, shape=screen_shape_observation)
         self.resolution = self.screen_shape[0] * self.screen_shape[1]  # (width x height)
         self.action_space = Discrete(self.resolution * self.number_of_marines)
-        self.unravel_shape = (self.screen_shape[0], self.screen_shape[1]) * self.number_of_marines
+        self.unravel_shape = (self.screen_shape[0], self.screen_shape[1])
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         # Get coords by unravelling action. DQN only supports returning an integer as action.

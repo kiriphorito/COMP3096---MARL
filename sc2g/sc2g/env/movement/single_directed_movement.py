@@ -41,7 +41,7 @@ class SingleDirectedMovementEnv(UnitTrackingEnv):
         if gym_action == 0:
             return [FUNCTIONS.no_op()]
 
-        player_unit_xy = self.state["player_units"][0]
+        player_unit_xy = [self.state["player_units"][0].x, self.state["player_units"][0].y]
         target_xy = player_unit_xy
 
         #  0: No-op

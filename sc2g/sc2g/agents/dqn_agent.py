@@ -13,7 +13,7 @@ from absl import flags
 from absl.flags import FLAGS
 # Environment
 import sc2g
-from sc2g.env.movement import MovementEnv, DirectedMovementEnv, MultiMovementEnv
+from sc2g.env.movement import MovementEnv, DirectedMovementEnv, MultiMovementEnv, SelectedMovementEnv, SingleDirectedMovementEnv
 from sc2g.env.attack import AttackEnv, DirectedAttackEnv, MultiAttackEnv
 # Algorithm
 from baselines import deepq

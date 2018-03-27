@@ -15,6 +15,7 @@ from functools import partial
 # Environment
 import sc2g
 from sc2g.env.movement import MovementEnv
+from sc2g.env.attack import AttackEnv
 from baselines.common.vec_env.subproc_vec_env import SubprocVecEnv
 # Algorithm
 from baselines.a2c.a2c import learn

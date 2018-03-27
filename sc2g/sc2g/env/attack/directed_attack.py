@@ -16,6 +16,9 @@ from pysc2.env.environment import TimeStep
 from pysc2.lib.actions import FUNCTIONS, FunctionCall
 from pysc2.lib import features
 
+# Numpy
+import numpy as np
+
 # Typing
 from typing import List
 
@@ -29,72 +32,66 @@ logger.setLevel(logging.INFO)
 class DirectedAttackEnv(UnitTrackingEnv):
     def __init__(self, sc2_env: SC2Env, **kwargs):
         super().__init__(sc2_env, **kwargs)
-        # 0th is no-op
-        # 1st - 8th are Move_screen
-        # 9th - 16th are Attack_screen
-        self.action_space = Discrete(17)
+        self.adjacency = 8 # set to 4 for up, down, left, right, 8 for 8-way
+        self.action_space = Discrete(self.adjacency * 2) # Move/Attack
+        self.move_space = (self.action_space.n / 2) - 1
 
     def get_sc2_action(self, gym_action) -> List[FunctionCall]:
         if FUNCTIONS.Move_screen.id not in self.available_actions:
             return [FUNCTIONS.select_army("select")]
 
-        player_units_y, player_units_x = (self.state["player_relative"] == features.PlayerRelative.SELF).nonzero()
+        # For restricting the action space for A2C, does not break DQN
+        gym_action %= self.action_space.n
 
-        if not player_units_x.size or not player_units_y.size:
-            print("No coords: X: {} / Y: {}".format(player_units_x, player_units_y))
-            return [FUNCTIONS.no_op()]
+        # Find mean coordinates of all currently active player units
+        player_units_xy = [(unit.x, unit.y) for unit in self.state["player_units"]]
+        arr = np.asarray(player_units_xy)
+        length = arr.shape[0]
+        x_sum = np.sum(arr[:, 0])
+        y_sum = np.sum(arr[:, 1])
+        centroid = (int(x_sum/length), int(y_sum/length))
 
-        player_units_xy = [int(player_units_x.mean()), int(player_units_y.mean())]
-        target_xy = player_units_xy
+        #  0: Up
+        #  1: Down
+        #  2: Left
+        #  3: Right
+        #  4: Up + Left
+        #  5: Up + Right
+        #  6: Down + Left
+        #  7: Down + Right
+        #  8: Up + Attack
+        #  9: Down + Attack
+        # 10: Left + Attack
+        # 11: Right + Attack
+        # 12: Up + Left + Attack
+        # 13: Up + Right + Attack
+        # 14: Down + Left + Attack
+        # 15: Down + Right + Attack
 
-        #  0: No-op
-        #  1: Up
-        #  2: Down
-        #  3: Left
-        #  4: Right
-        #  5: Up + Left
-        #  6: Up + Right
-        #  7: Down + Left
-        #  8: Down + Right
-        #  9: Up + Attack
-        # 10: Down + Attack
-        # 11: Left + Attack
-        # 12: Right + Attack
-        # 13: Up + Left + Attack
-        # 14: Up + Right + Attack
-        # 15: Down + Left + Attack
-        # 16: Down + Right + Attack
-
-        # Determine target position
-        if gym_action in (1, 5, 6, 9, 13, 14):
-            # Up
-            target_xy[1] = 0
-
-        if gym_action in (2, 7, 8, 10, 15, 16):
-            # Down
-            target_xy[1] = self.screen_shape[1]-1
-
-        if gym_action in (3, 5, 7, 11, 13, 15):
-            # Left
-            target_xy[0] = 0
-
-        if gym_action in (4, 6, 8, 12, 14, 16):
-            # Right
-            target_xy[0] = self.screen_shape[0]-1
+        is_attack = gym_action > self.move_space
+        if is_attack: gym_action %= self.adjacency
+        target_xy = list(centroid)
+        x_max = self.screen_shape[0]-1
+        y_max = self.screen_shape[1]-1
+        # Determine target position, diff => min(abs(x_diff), abs(y_diff))
+        if   gym_action == 0: target_xy[1] = 0
+        elif gym_action == 1: target_xy[1] = y_max
+        elif gym_action == 2: target_xy[0] = 0
+        elif gym_action == 3: target_xy[0] = x_max
+        elif gym_action == 4:
+            diff = min(centroid[0], centroid[1])
+            target_xy = [target_xy[0] - diff, target_xy[1] - diff]
+        elif gym_action == 5:
+            diff = min(x_max - centroid[0], centroid[1])
+            target_xy = [target_xy[0] + diff, target_xy[1] - diff]
+        elif gym_action == 6:
+            diff = min(centroid[0], y_max - centroid[1])
+            target_xy = [target_xy[0] - diff, target_xy[1] + diff]
+        elif gym_action == 7:
+            diff = min(x_max - centroid[0], y_max - centroid[1])
+            target_xy = [target_xy[0] + diff, target_xy[1] + diff]
 
         # Assign action function
-        if gym_action in range(1, 9):
-            # Move_screen
-            action = FUNCTIONS.Move_screen("now", target_xy)
-        elif gym_action in range(9, 17):
-            # Attack_screen
-            action = FUNCTIONS.Attack_screen("now", target_xy)
-        else:
-            # No-op
-            action = FUNCTIONS.no_op()
+        action = FUNCTIONS.Attack_screen("now", target_xy) if is_attack else FUNCTIONS.Move_screen("now", target_xy)
 
         return [action]
-
-    def update_state(self, timestep: TimeStep, is_new_episode):
-        super().update_state(timestep, is_new_episode)
-        self.state["player_relative"] = timestep.observation.feature_screen.player_relative

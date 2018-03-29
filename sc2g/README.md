@@ -37,4 +37,5 @@ python3 -m sc2g.agents.a2c_agent \
 ```
 (will spin up 8 instances of SC2 in parallel - adjust `envs` as required.)
 
-More algos to come...
+## Attribution
+This project builds upon work done by [sc2atari](https://github.com/pekaalto/sc2atari) and [sc2gym](https://github.com/islamelnabarawy/sc2gym).
